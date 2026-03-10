@@ -1,0 +1,130 @@
+name: Scout Weekly Intelligence Run
+
+on:
+  # Run every Monday at 6am ET (11am UTC)
+  schedule:
+    - cron: '0 11 * * 1'
+  
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+    inputs:
+      client_slug:
+        description: 'Client slug to run (leave blank for all)'
+        required: false
+        default: ''
+
+env:
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+  SEMRUSH_API_KEY: ${{ secrets.SEMRUSH_API_KEY }}
+  REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+  REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+
+jobs:
+  collect-and-synthesize:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Get active clients
+        id: get-clients
+        run: |
+          python -c "
+          import os, json
+          from supabase import create_client
+          sb = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_SERVICE_KEY'])
+          result = sb.table('clients').select('slug').execute()
+          slugs = [r['slug'] for r in result.data]
+          print('clients=' + json.dumps(slugs))
+          " >> $GITHUB_OUTPUT
+
+      - name: Run Semrush collector
+        run: |
+          INPUT_SLUG="${{ github.event.inputs.client_slug }}"
+          if [ -n "$INPUT_SLUG" ]; then
+            python collectors/semrush_collector.py "$INPUT_SLUG"
+          else
+            echo '${{ steps.get-clients.outputs.clients }}' | python -c "
+          import sys, json, subprocess
+          clients = json.load(sys.stdin)
+          for slug in clients:
+              subprocess.run(['python', 'collectors/semrush_collector.py', slug], check=False)
+            "
+          fi
+
+      - name: Run News collector
+        run: |
+          INPUT_SLUG="${{ github.event.inputs.client_slug }}"
+          if [ -n "$INPUT_SLUG" ]; then
+            python collectors/news_collector.py "$INPUT_SLUG"
+          else
+            echo '${{ steps.get-clients.outputs.clients }}' | python -c "
+          import sys, json, subprocess
+          clients = json.load(sys.stdin)
+          for slug in clients:
+              subprocess.run(['python', 'collectors/news_collector.py', slug], check=False)
+            "
+          fi
+
+      - name: Run Reddit collector
+        run: |
+          INPUT_SLUG="${{ github.event.inputs.client_slug }}"
+          if [ -n "$INPUT_SLUG" ]; then
+            python collectors/reddit_collector.py "$INPUT_SLUG"
+          else
+            echo '${{ steps.get-clients.outputs.clients }}' | python -c "
+          import sys, json, subprocess
+          clients = json.load(sys.stdin)
+          for slug in clients:
+              subprocess.run(['python', 'collectors/reddit_collector.py', slug], check=False)
+            "
+          fi
+
+      - name: Run Claude synthesizer
+        run: |
+          INPUT_SLUG="${{ github.event.inputs.client_slug }}"
+          if [ -n "$INPUT_SLUG" ]; then
+            python synthesizers/synthesizer.py "$INPUT_SLUG"
+          else
+            echo '${{ steps.get-clients.outputs.clients }}' | python -c "
+          import sys, json, subprocess
+          clients = json.load(sys.stdin)
+          for slug in clients:
+              subprocess.run(['python', 'synthesizers/synthesizer.py', slug], check=False)
+            "
+          fi
+
+      - name: Build dashboards
+        run: |
+          INPUT_SLUG="${{ github.event.inputs.client_slug }}"
+          if [ -n "$INPUT_SLUG" ]; then
+            SCOUT_CLIENT_SLUG="$INPUT_SLUG" python builders/dashboard_builder.py "$INPUT_SLUG"
+          else
+            echo '${{ steps.get-clients.outputs.clients }}' | python -c "
+          import sys, json, subprocess, os
+          clients = json.load(sys.stdin)
+          for slug in clients:
+              env = {**os.environ, 'SCOUT_CLIENT_SLUG': slug}
+              subprocess.run(['python', 'builders/dashboard_builder.py', slug], check=False, env=env)
+            "
+          fi
+
+      - name: Commit updated dashboard
+        run: |
+          git config --local user.email "scout-bot@parallelpath.com"
+          git config --local user.name "Scout Bot"
+          git add index.html
+          git diff --staged --quiet || git commit -m "Scout: Weekly intelligence update $(date +'%Y-%m-%d')"
+          git push
