@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scout — Competitive Intelligence by Parallel Path</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --cadet:   #233D4D;
+    --current: #3C6E71;
+    --linen:   #F6EDE6;
+    --coral:   #E1885E;
+    --mustard: #DCBE4C;
+    --bubble:  #8CBEC6;
+    --jet:     #333333;
+    --spring:  #C6EB4C;
+    --nectar:  #F0C3AE;
+    --sand:    #D0A684;
+    --dove:    #666666;
+
+    --bg:      #1d3341;
+    --surface: #243f50;
+    --surface2:#192c3a;
+    --border:  rgba(246,237,230,0.08);
+    --border2: rgba(246,237,230,0.14);
+    --text:    #F6EDE6;
+    --muted:   #8fb0b5;
+
+    --font-head: 'Open Sans', sans-serif;
+    --font-body: 'Merriweather', serif;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 13px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .shell { display: grid; grid-template-columns: 228px 1fr; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--surface2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .logo-wrap {
+    padding: 26px 22px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; }
+
+  .logo-icon {
+    width: 30px; height: 30px;
+    background: var(--current);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo-icon svg { width: 16px; height: 16px; }
+
+  .logo-name {
+    font-family: var(--font-head);
+    font-size: 21px;
+    font-weight: 700;
+    color: var(--linen);
+    letter-spacing: -0.3px;
+  }
+
+  .logo-by {
+    font-family: var(--font-head);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    padding-left: 40px;
+  }
+
+  .client-badge {
+    margin: 14px 14px 6px;
+    background: var(--current);
+    border-radius: 8px;
+    padding: 12px 16px;
+  }
+
+  .client-badge-label {
+    font-family: var(--font-head);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(246,237,230,0.6);
+    margin-bottom: 4px;
+  }
+
+  .client-badge-name {
+    font-family: var(--font-head);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--linen);
+  }
+
+  .nav-section {
+    padding: 16px 20px 5px;
+    font-family: var(--font-head);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 400;
+    border-left: 3px solid transparent;
+    margin: 1px 0;
+    user-select: none;
+  }
+
+  .nav-item:hover { color: var(--linen); background: rgba(246,237,230,0.04); }
+
+  .nav-item.active {
+    color: var(--linen);
+    border-left-color: var(--mustard);
+    background: rgba(220,190,76,0.07);
+    font-weight: 600;
+  }
+
+  .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .week-badge {
+    font-family: var(--font-head);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .week-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--spring);
+    flex-shrink: 0;
+    animation: pulse 2.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100%{ opacity:1; transform:scale(1); }
+    50%{ opacity:0.35; transform:scale(0.8); }
+  }
+
+  /* ── MAIN ── */
+  .main { overflow-y: auto; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 17px 30px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(29,51,65,0.95);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .topbar-title {
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--linen);
+  }
+
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  .date-chip {
+    font-family: var(--font-head);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    padding: 5px 12px;
+    border-radius: 20px;
+  }
+
+  .export-btn {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: var(--current);
+    color: var(--linen);
+    border: none;
+    padding: 7px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .export-btn:hover { background: #4a8588; }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-content {
+    padding: 30px;
+    animation: fadeUp 0.2s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-header { margin-bottom: 26px; }
+
+  .page-eyebrow {
+    font-family: var(--font-head);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--bubble);
+    margin-bottom: 5px;
+  }
+
+  .page-header-title {
+    font-family: var(--font-head);
+    font-size: 26px;
+    font-weight: 300;
+    color: var(--linen);
+    margin-bottom: 5px;
+    line-height: 1.2;
+  }
+
+  .page-header-sub {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── PRESSURE HERO ── */
+  .pressure-hero {
+    background: var(--current);
+    border-radius: 14px;
+    padding: 30px;
+    display: grid;
+    grid-template-columns: 170px 1fr;
+    gap: 32px;
+    align-items: center;
+    margin-bottom: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pressure-hero::after {
+    content:'';
+    position:absolute;
+    bottom:-50px; right:-50px;
+    width:220px; height:220px;
+    border-radius:50%;
+    background: rgba(246,237,230,0.04);
+    pointer-events:none;
+  }
+
+  .pressure-score-wrap { text-align: center; }
+
+  .pressure-eyebrow {
+    font-family: var(--font-head);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(246,237,230,0.55);
+    margin-bottom: 5px;
+  }
+
+  .pressure-score {
+    font-family: var(--font-head);
+    font-size: 96px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -4px;
+    color: var(--mustard);
+  }
+
+  .pressure-delta {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--coral);
+    margin-top: 6px;
+  }
+
+  .pressure-title {
+    font-family: var(--font-head);
+    font-size: 19px;
+    font-weight: 300;
+    color: var(--linen);
+    margin-bottom: 8px;
+    line-height: 1.35;
+  }
+
+  .pressure-desc {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: rgba(246,237,230,0.72);
+    line-height: 1.7;
+    margin-bottom: 18px;
+  }
+
+  .pressure-breakdown { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .breakdown-item {
+    background: rgba(246,237,230,0.1);
+    border-radius: 8px;
+    padding: 9px 14px;
+    text-align: center;
+  }
+
+  .breakdown-item-label {
+    font-family: var(--font-head);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(246,237,230,0.55);
+    margin-bottom: 3px;
+  }
+
+  .breakdown-item-val {
+    font-family: var(--font-head);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--linen);
+  }
+
+  /* ── METRIC GRID ── */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .metric-card-label {
+    font-family: var(--font-head);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 9px;
+  }
+
+  .metric-card-val {
+    font-family: var(--font-head);
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--linen);
+    margin-bottom: 5px;
+  }
+
+  .metric-card-delta {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .delta-up      { color: var(--coral); }
+  .delta-down    { color: var(--spring); }
+  .delta-neutral { color: var(--muted); }
+
+  /* ── CHART CARD ── */
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 22px;
+  }
+
+  .chart-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    gap: 16px;
+  }
+
+  .chart-eyebrow {
+    font-family: var(--font-head);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--bubble);
+    margin-bottom: 3px;
+  }
+
+  .chart-title {
+    font-family: var(--font-head);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--linen);
+    margin-bottom: 3px;
+  }
+
+  .chart-subtitle {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .chart-legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink:0; }
+
+  .chart-wrap { position: relative; height: 210px; }
+  .chart-wrap.tall { height: 270px; }
+
+  /* ── TWO COL ── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 22px; }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .section-title {
+    font-family: var(--font-head);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--linen);
+  }
+
+  .section-meta {
+    font-family: var(--font-head);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  /* ── HIGHLIGHTS ── */
+  .highlights { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 22px; }
+
+  .highlight-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    border-top: 4px solid;
+  }
+
+  .highlight-card.alert       { border-top-color: var(--coral); }
+  .highlight-card.watch       { border-top-color: var(--mustard); }
+  .highlight-card.opportunity { border-top-color: var(--spring); }
+
+  .highlight-type {
+    font-family: var(--font-head);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 8px;
+  }
+
+  .highlight-card.alert       .highlight-type { color: var(--coral); }
+  .highlight-card.watch       .highlight-type { color: var(--mustard); }
+  .highlight-card.opportunity .highlight-type { color: var(--spring); }
+
+  .highlight-title {
+    font-family: var(--font-head);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--linen);
+    margin-bottom: 10px;
+    line-height: 1.35;
+  }
+
+  .highlight-body {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 14px;
+  }
+
+  .highlight-action {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--linen);
+    background: rgba(198,235,76,0.07);
+    border: 1px solid rgba(198,235,76,0.18);
+    border-left: 3px solid var(--spring);
+    border-radius: 6px;
+    padding: 10px 13px;
+    line-height: 1.55;
+  }
+
+  /* ── SIGNALS ── */
+  .signals-feed { display: flex; flex-direction: column; }
+
+  .signal-item {
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    gap: 14px;
+    align-items: start;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .signal-item:last-child { border-bottom: none; }
+
+  .signal-icon-wrap {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .signal-icon-wrap.organic { background: rgba(60,110,113,0.2); color: var(--bubble); }
+  .signal-icon-wrap.paid    { background: rgba(225,136,94,0.15); color: var(--coral); }
+  .signal-icon-wrap.social  { background: rgba(220,190,76,0.15); color: var(--mustard); }
+  .signal-icon-wrap.news    { background: rgba(198,235,76,0.1); color: var(--spring); }
+  .signal-icon-wrap.web     { background: rgba(240,195,174,0.12); color: var(--nectar); }
+  .signal-icon-wrap.hiring  { background: rgba(139,190,198,0.14); color: var(--bubble); }
+  .signal-icon-wrap svg { width: 15px; height: 15px; }
+
+  .signal-competitor {
+    font-family: var(--font-head);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+
+  .signal-title {
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--linen);
+    margin-bottom: 5px;
+    line-height: 1.4;
+  }
+
+  .signal-interp {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.65;
+    font-style: italic;
+  }
+
+  .signal-time {
+    font-family: var(--font-head);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--dove);
+    white-space: nowrap;
+    padding-top: 2px;
+  }
+
+  /* ── TABLE ── */
+  .data-table { width: 100%; border-collapse: collapse; }
+
+  .data-table th {
+    font-family: var(--font-head);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-align: left;
+    padding: 0 0 11px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .data-table td {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: middle;
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+
+  .kw { font-family: var(--font-head); font-size: 13px; font-weight: 600; color: var(--linen); }
+  .comp-label { font-family: var(--font-head); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+
+  .pos-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--font-head); font-size: 11px; font-weight: 700;
+    padding: 3px 9px; border-radius: 4px; min-width: 34px;
+  }
+
+  .pos-badge.good { background: rgba(60,110,113,0.22); color: var(--bubble); }
+  .pos-badge.mid  { background: rgba(220,190,76,0.15); color: var(--mustard); }
+  .pos-badge.bad  { background: rgba(225,136,94,0.15); color: var(--coral); }
+
+  .chg { font-family: var(--font-head); font-size: 11px; font-weight: 700; }
+  .chg.up   { color: var(--coral); }
+  .chg.down { color: var(--spring); }
+
+  /* ── AD CARDS ── */
+  .ad-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; }
+
+  .ad-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 17px;
+  }
+
+  .ad-card-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+
+  .ad-comp-tag {
+    font-family: var(--font-head);
+    font-size: 9px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+
+  .ad-change-tag {
+    font-family: var(--font-head);
+    font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 3px 9px; border-radius: 20px;
+    background: rgba(225,136,94,0.14);
+    color: var(--coral);
+  }
+
+  .ad-headline {
+    font-family: var(--font-head);
+    font-size: 14px; font-weight: 700;
+    color: var(--bubble);
+    margin-bottom: 5px; line-height: 1.3;
+  }
+
+  .ad-desc {
+    font-family: var(--font-body);
+    font-size: 12px; color: var(--muted); line-height: 1.6;
+  }
+
+  .ad-url {
+    font-family: var(--font-head);
+    font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--spring); margin-top: 9px; display: block;
+  }
+
+  /* ── SOCIAL METRICS ── */
+  .social-metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 18px; }
+
+  .social-metric {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+  }
+
+  .social-platform {
+    font-family: var(--font-head);
+    font-size: 9px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--muted); margin-bottom: 7px;
+  }
+
+  .social-count {
+    font-family: var(--font-head);
+    font-size: 23px; font-weight: 700;
+    color: var(--linen); margin-bottom: 3px;
+  }
+
+  .social-brand { font-family: var(--font-body); font-size: 11px; color: var(--muted); }
+
+  /* ── COMP PILLS ── */
+  .comp-pills { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+
+  .comp-pill {
+    font-family: var(--font-head);
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.07em;
+    padding: 5px 14px; border-radius: 20px;
+    border: 1px solid var(--border2);
+    cursor: pointer; color: var(--muted);
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 7px;
+    user-select: none;
+  }
+
+  .comp-pill:hover { border-color: var(--bubble); color: var(--linen); }
+  .comp-pill.active { background: rgba(60,110,113,0.18); border-color: var(--current); color: var(--linen); }
+  .comp-pill-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+  /* ── HIRING GRID ── */
+  .hiring-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+
+  .hiring-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+  }
+
+  .hiring-role { font-family: var(--font-head); font-size: 13px; font-weight: 600; color: var(--linen); margin-bottom: 5px; }
+  .hiring-meta { font-family: var(--font-head); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+  .hiring-signal { font-family: var(--font-body); font-size: 12px; color: var(--mustard); font-style: italic; line-height: 1.5; }
+
+  .divider { height: 1px; background: var(--border); margin: 22px 0; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(246,237,230,0.1); border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="logo-wrap">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4" stroke="#F6EDE6" stroke-width="1.5"/><line x1="9.7" y1="9.7" x2="14.3" y2="14.3" stroke="#F6EDE6" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <span class="logo-name">Scout</span>
+    </div>
+    <div class="logo-by">by Parallel Path</div>
+  </div>
+  <div class="client-badge">
+    <div class="client-badge-label">Monitoring client</div>
+    <div class="client-badge-name">Apex Nutrition</div>
+  </div>
+  <div class="nav-section">Intelligence</div>
+  <div class="nav-item active" onclick="showPage('overview',this)">
+    <svg viewBox="0 0 15 15" fill="none"><rect x="1" y="1" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8.5" y="1" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="8.5" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+    Overview
+  </div>
+  <div class="nav-item" onclick="showPage('organic',this)">
+    <svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/></svg>
+    Organic Search
+  </div>
+  <div class="nav-item" onclick="showPage('paid',this)">
+    <svg viewBox="0 0 15 15" fill="none"><rect x="1" y="3" width="13" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 7.5h5M7.5 5.5v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    Paid Search
+  </div>
+  <div class="nav-item" onclick="showPage('social',this)">
+    <svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="4" r="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="2.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 10c.5-2 1.5-3 3-3s2.5 1 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    Social
+  </div>
+  <div class="nav-item" onclick="showPage('signals',this)">
+    <svg viewBox="0 0 15 15" fill="none"><path d="M1 11L5 5l3 4 2-3 4 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    All Signals
+  </div>
+  <div class="sidebar-footer">
+    <div class="week-badge"><div class="week-dot"></div>Mar 3–9, 2026</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title">Apex Nutrition — Competitive Intelligence</div>
+    <div class="topbar-right">
+      <div class="date-chip">Mar 9, 2026</div>
+      <button class="export-btn">↓ Export Brief</button>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div id="page-overview" class="page active">
+    <div class="page-content">
+      <div class="pressure-hero">
+        <div class="pressure-score-wrap">
+          <div class="pressure-eyebrow">Competitive Pressure Score</div>
+          <div class="pressure-score">74</div>
+          <div class="pressure-delta">↑ +11 from last week</div>
+        </div>
+        <div>
+          <div class="pressure-title">Elevated activity across organic<br>and paid channels this week</div>
+          <div class="pressure-desc">Peak Fuel entered the top 3 for your highest-converting keyword cluster. Vitagen doubled paid ad spend estimates. Highest pressure score in 8 weeks — review the developments and recommended actions below.</div>
+          <div class="pressure-breakdown">
+            <div class="breakdown-item"><div class="breakdown-item-label">Organic</div><div class="breakdown-item-val" style="color:var(--coral)">82</div></div>
+            <div class="breakdown-item"><div class="breakdown-item-label">Paid</div><div class="breakdown-item-val" style="color:var(--mustard)">71</div></div>
+            <div class="breakdown-item"><div class="breakdown-item-label">Social</div><div class="breakdown-item-val" style="color:var(--bubble)">58</div></div>
+            <div class="breakdown-item"><div class="breakdown-item-label">Signals</div><div class="breakdown-item-val" style="color:var(--spring)">44</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-card"><div class="metric-card-label">Organic Share of Voice</div><div class="metric-card-val">31<span style="font-size:15px;font-weight:400">%</span></div><div class="metric-card-delta delta-down">↓ −3.2% vs last week</div></div>
+        <div class="metric-card"><div class="metric-card-label">Paid Keyword Overlap</div><div class="metric-card-val">47<span style="font-size:15px;font-weight:400">%</span></div><div class="metric-card-delta delta-up">↑ +8% vs last week</div></div>
+        <div class="metric-card"><div class="metric-card-label">Competitor Page Changes</div><div class="metric-card-val">12</div><div class="metric-card-delta delta-up">↑ +5 vs last week</div></div>
+        <div class="metric-card"><div class="metric-card-label">News Mentions (competitors)</div><div class="metric-card-val">28</div><div class="metric-card-delta delta-neutral">→ Steady vs last week</div></div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">Top 3 Developments This Week</div>
+        <div class="section-meta">AI-synthesized · Analyst reviewed</div>
+      </div>
+
+      <div class="highlights">
+        <div class="highlight-card alert">
+          <div class="highlight-type">🔴 Alert</div>
+          <div class="highlight-title">Peak Fuel enters top 3 for "protein powder for women"</div>
+          <div class="highlight-body">Peak Fuel jumped 14 positions to rank #3 for your highest-volume keyword. New landing page features before/after testimonials and a 30-day money-back guarantee — elements currently absent from your product pages.</div>
+          <div class="highlight-action">Refresh the protein powder for women landing page with social proof and a risk-reversal offer within 2 weeks.</div>
+        </div>
+        <div class="highlight-card watch">
+          <div class="highlight-type">🟡 Watch</div>
+          <div class="highlight-title">Vitagen ad spend up ~2× — targeting your branded terms</div>
+          <div class="highlight-body">Vitagen's estimated paid spend increased from ~$18K to ~$36K weekly with directly comparative new ad copy. They are now bidding on 12 keywords that overlap with your top campaigns.</div>
+          <div class="highlight-action">Increase bid adjustments on your top 10 branded and category keywords by 20–30% this week.</div>
+        </div>
+        <div class="highlight-card opportunity">
+          <div class="highlight-type">🟢 Opportunity</div>
+          <div class="highlight-title">CoreStrength pulled back on content — 6-week publishing gap</div>
+          <div class="highlight-body">CoreStrength has published zero new content in 6 weeks. A gap is opening in recovery nutrition and endurance fueling — keyword clusters where they previously ranked strongest.</div>
+          <div class="highlight-action">Accelerate publishing into recovery nutrition and endurance fueling clusters while CoreStrength is stalled.</div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-eyebrow">90-Day Trend</div>
+            <div class="chart-title">Competitive Pressure Score</div>
+            <div class="chart-subtitle">Weekly composite across all signal categories</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="pressureChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORGANIC -->
+  <div id="page-organic" class="page">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-eyebrow">Intelligence</div>
+        <div class="page-header-title">Organic Search</div>
+        <div class="page-header-sub">Share of voice, keyword movement, and content velocity across 4 competitors</div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-eyebrow">Share of Voice</div>
+            <div class="chart-title">Core Protein Category — 12 Weeks</div>
+            <div class="chart-subtitle">% of total impressions in keyword cluster</div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#3C6E71"></div>Apex</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#8CBEC6"></div>Peak Fuel</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#E1885E"></div>Vitagen</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#DCBE4C"></div>CoreStrength</div>
+          </div>
+        </div>
+        <div class="chart-wrap tall"><canvas id="sovChart"></canvas></div>
+      </div>
+
+      <div class="two-col">
+        <div class="chart-card" style="margin-bottom:0">
+          <div class="chart-header"><div><div class="chart-eyebrow">Content</div><div class="chart-title">Publishing Velocity</div><div class="chart-subtitle">New pages per week</div></div></div>
+          <div class="chart-wrap"><canvas id="velocityChart"></canvas></div>
+        </div>
+        <div class="chart-card" style="margin-bottom:0">
+          <div class="chart-header"><div><div class="chart-eyebrow">Authority</div><div class="chart-title">Domain Authority Trend</div><div class="chart-subtitle">Rolling 30-day average</div></div></div>
+          <div class="chart-wrap"><canvas id="daChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-header">
+        <div class="section-title">Keyword Movers This Week</div>
+        <div class="section-meta">Position changes ≥5 · competitor overlap flagged</div>
+      </div>
+
+      <div class="chart-card">
+        <table class="data-table">
+          <thead><tr><th>Keyword</th><th>Competitor</th><th>Position</th><th>Change</th><th>Volume</th><th>Your Overlap</th></tr></thead>
+          <tbody>
+            <tr><td><span class="kw">protein powder for women</span></td><td><span class="comp-label">Peak Fuel</span></td><td><span class="pos-badge good">#3</span></td><td><span class="chg up">↑ +14</span></td><td>22,000</td><td><span style="color:var(--coral);font-family:var(--font-head);font-size:11px;font-weight:600">You rank #5</span></td></tr>
+            <tr><td><span class="kw">best whey protein isolate</span></td><td><span class="comp-label">Vitagen</span></td><td><span class="pos-badge good">#2</span></td><td><span class="chg up">↑ +8</span></td><td>18,500</td><td><span style="color:var(--mustard);font-family:var(--font-head);font-size:11px;font-weight:600">You rank #4</span></td></tr>
+            <tr><td><span class="kw">plant protein powder review</span></td><td><span class="comp-label">CoreStrength</span></td><td><span class="pos-badge mid">#8</span></td><td><span class="chg down">↓ −6</span></td><td>9,200</td><td><span style="color:var(--spring);font-family:var(--font-head);font-size:11px;font-weight:600">Gap — you rank #3</span></td></tr>
+            <tr><td><span class="kw">post workout recovery nutrition</span></td><td><span class="comp-label">CoreStrength</span></td><td><span class="pos-badge mid">#7</span></td><td><span class="chg down">↓ −9</span></td><td>7,800</td><td><span style="color:var(--spring);font-family:var(--font-head);font-size:11px;font-weight:600">Gap — you rank #6</span></td></tr>
+            <tr><td><span class="kw">protein shake vs real food</span></td><td><span class="comp-label">Peak Fuel</span></td><td><span class="pos-badge good">#1</span></td><td><span class="chg up">↑ +5</span></td><td>5,400</td><td><span style="color:var(--dove);font-family:var(--font-head);font-size:11px;font-weight:600">Not ranking</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAID -->
+  <div id="page-paid" class="page">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-eyebrow">Intelligence</div>
+        <div class="page-header-title">Paid Search</div>
+        <div class="page-header-sub">Ad spend estimates, keyword overlap, and creative intelligence</div>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-card"><div class="metric-card-label">Peak Fuel Est. Weekly Spend</div><div class="metric-card-val">$24k</div><div class="metric-card-delta delta-neutral">→ Steady</div></div>
+        <div class="metric-card"><div class="metric-card-label">Vitagen Est. Weekly Spend</div><div class="metric-card-val">$36k</div><div class="metric-card-delta delta-up">↑ +$18k this week</div></div>
+        <div class="metric-card"><div class="metric-card-label">CoreStrength Est. Weekly Spend</div><div class="metric-card-val">$9k</div><div class="metric-card-delta delta-down">↓ −$3k vs last week</div></div>
+        <div class="metric-card"><div class="metric-card-label">New Overlap Keywords</div><div class="metric-card-val">14</div><div class="metric-card-delta delta-up">↑ +6 new this week</div></div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-eyebrow">Paid Share of Voice</div>
+            <div class="chart-title">Estimated Impression Share — Core Category</div>
+            <div class="chart-subtitle">Weekly estimates across all competitors</div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#3C6E71"></div>Apex</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#8CBEC6"></div>Peak Fuel</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#E1885E"></div>Vitagen</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#DCBE4C"></div>CoreStrength</div>
+          </div>
+        </div>
+        <div class="chart-wrap tall"><canvas id="paidSovChart"></canvas></div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">Competitor Ad Creative — This Week</div>
+        <div class="section-meta">New or changed ads detected · flagged for review</div>
+      </div>
+
+      <div class="ad-grid">
+        <div class="ad-card">
+          <div class="ad-card-meta"><span class="ad-comp-tag">Peak Fuel</span><span class="ad-change-tag">New this week</span></div>
+          <div class="ad-headline">Women's Protein, Finally Done Right</div>
+          <div class="ad-desc">30g protein, zero artificial sweeteners. Built for women who train hard. Try risk-free for 30 days — full refund, no questions.</div>
+          <span class="ad-url">peakfuel.com/womens-protein</span>
+        </div>
+        <div class="ad-card">
+          <div class="ad-card-meta"><span class="ad-comp-tag">Vitagen</span><span class="ad-change-tag">Copy changed</span></div>
+          <div class="ad-headline">Why Athletes Are Making the Switch</div>
+          <div class="ad-desc">Clinically-dosed, third-party tested. No proprietary blends. 50,000+ athletes trust Vitagen. Free shipping on first order.</div>
+          <span class="ad-url">vitagen.co/athlete-protein</span>
+        </div>
+        <div class="ad-card">
+          <div class="ad-card-meta"><span class="ad-comp-tag">Peak Fuel</span><span class="ad-change-tag">New landing page</span></div>
+          <div class="ad-headline">Best Whey Isolate 2026 — Ranked #1</div>
+          <div class="ad-desc">Independent lab-tested. Named best protein powder by Men's Health and Healthline. Subscribe and save 25% today.</div>
+          <span class="ad-url">peakfuel.com/best-whey-2026</span>
+        </div>
+        <div class="ad-card">
+          <div class="ad-card-meta"><span class="ad-comp-tag">Vitagen</span><span class="ad-change-tag">New campaign</span></div>
+          <div class="ad-headline">Protein That Actually Works</div>
+          <div class="ad-desc">Backed by 12 peer-reviewed studies. Transparent label, no fillers. Compare us to any brand — we'll win. 30-day guarantee.</div>
+          <span class="ad-url">vitagen.co/compare</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOCIAL -->
+  <div id="page-social" class="page">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-eyebrow">Intelligence</div>
+        <div class="page-header-title">Social</div>
+        <div class="page-header-sub">Follower growth, content velocity, and engagement signals across YouTube, Instagram, and Reddit</div>
+      </div>
+
+      <div class="social-metrics">
+        <div class="social-metric"><div class="social-platform">YouTube · Subscribers</div><div class="social-count" style="color:var(--coral)">284K</div><div class="social-brand">Peak Fuel · +4.2K this week</div></div>
+        <div class="social-metric"><div class="social-platform">YouTube · Subscribers</div><div class="social-count" style="color:var(--mustard)">198K</div><div class="social-brand">Vitagen · +2.1K this week</div></div>
+        <div class="social-metric"><div class="social-platform">YouTube · Subscribers</div><div class="social-count" style="color:var(--dove)">91K</div><div class="social-brand">CoreStrength · +0.3K this week</div></div>
+        <div class="social-metric"><div class="social-platform">Instagram · Followers</div><div class="social-count" style="color:var(--coral)">412K</div><div class="social-brand">Peak Fuel · +8.1K this week</div></div>
+        <div class="social-metric"><div class="social-platform">Instagram · Followers</div><div class="social-count" style="color:var(--mustard)">267K</div><div class="social-brand">Vitagen · +3.4K this week</div></div>
+        <div class="social-metric"><div class="social-platform">Instagram · Followers</div><div class="social-count" style="color:var(--dove)">143K</div><div class="social-brand">CoreStrength · −0.2K this week</div></div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-eyebrow">Social Growth</div>
+            <div class="chart-title">YouTube Subscriber Growth — 12 Weeks</div>
+            <div class="chart-subtitle">Net new weekly subscribers per competitor</div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#8CBEC6"></div>Peak Fuel</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#E1885E"></div>Vitagen</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#DCBE4C"></div>CoreStrength</div>
+          </div>
+        </div>
+        <div class="chart-wrap tall"><canvas id="socialChart"></canvas></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-header">
+        <div class="section-title">Reddit — Notable Threads This Week</div>
+        <div class="section-meta">r/Supplements · r/Fitness · r/nutrition</div>
+      </div>
+
+      <div class="chart-card">
+        <div class="signals-feed">
+          <div class="signal-item">
+            <div class="signal-icon-wrap social"><svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M10 7.5c0 1.38-1.12 2.5-2.5 2.5S5 8.88 5 7.5 6.12 5 7.5 5 10 6.12 10 7.5z" stroke="currentColor" stroke-width="1.3"/></svg></div>
+            <div class="signal-body">
+              <div class="signal-competitor">r/Supplements · 847 upvotes</div>
+              <div class="signal-title">"Switched from [Apex] to Peak Fuel — honestly shocked at the difference in mixability"</div>
+              <div class="signal-interp">Organic brand comparison thread gaining traction. Peak Fuel mentioned favorably on mixability and taste. No brand response in thread — an opportunity to engage.</div>
+            </div>
+            <div class="signal-time">2 days ago</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-icon-wrap social"><svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M10 7.5c0 1.38-1.12 2.5-2.5 2.5S5 8.88 5 7.5 6.12 5 7.5 5 10 6.12 10 7.5z" stroke="currentColor" stroke-width="1.3"/></svg></div>
+            <div class="signal-body">
+              <div class="signal-competitor">r/nutrition · 312 upvotes</div>
+              <div class="signal-title">"Best protein powder for women who lift? Not trying to bulk"</div>
+              <div class="signal-interp">High-intent buying thread. Peak Fuel mentioned in top comment. Opportunity for content targeting this query before competitors dominate it further.</div>
+            </div>
+            <div class="signal-time">4 days ago</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-icon-wrap social"><svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M10 7.5c0 1.38-1.12 2.5-2.5 2.5S5 8.88 5 7.5 6.12 5 7.5 5 10 6.12 10 7.5z" stroke="currentColor" stroke-width="1.3"/></svg></div>
+            <div class="signal-body">
+              <div class="signal-competitor">r/Supplements · 204 upvotes</div>
+              <div class="signal-title">"Vitagen's new transparent label is a game changer — industry needs to follow"</div>
+              <div class="signal-interp">Vitagen's label redesign generating positive earned discussion. Transparency messaging may shift category expectations — worth considering in your own product communications.</div>
+            </div>
+            <div class="signal-time">5 days ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGNALS -->
+  <div id="page-signals" class="page">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-eyebrow">Intelligence</div>
+        <div class="page-header-title">All Signals</div>
+        <div class="page-header-sub">Complete intelligence feed for the week of Mar 3–9, 2026 · AI-interpreted and analyst reviewed</div>
+      </div>
+
+      <div class="comp-pills">
+        <div class="comp-pill active"><div class="comp-pill-dot" style="background:var(--current)"></div>All</div>
+        <div class="comp-pill"><div class="comp-pill-dot" style="background:var(--bubble)"></div>Peak Fuel</div>
+        <div class="comp-pill"><div class="comp-pill-dot" style="background:var(--coral)"></div>Vitagen</div>
+        <div class="comp-pill"><div class="comp-pill-dot" style="background:var(--mustard)"></div>CoreStrength</div>
+      </div>
+
+      <div class="chart-card">
+        <div class="signals-feed">
+          <div class="signal-item">
+            <div class="signal-icon-wrap organic"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/></svg></div>
+            <div class="signal-body">
+              <div class="signal-competitor">Peak Fuel · Organic</div>
+              <div class="signal-title">Ranked #3 for "protein powder for women" — up from #17 last week</div>
+              <div class="signal-interp">Rapid jump coincides with new landing page featuring clinical study citations and a money-back guarantee. Likely supported by a concurrent link-building push.</div>
+            </div>
+            <div class="signal-time">Mar 7</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-icon-wrap paid"><svg viewBox="0 0 15 15" fill="none"><rect x="1" y="3" width="13" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 7.5h5M7.5 5.5v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+            <div class="signal-body">
+              <div class="signal-competitor">Vitagen · Paid</div>
+              <div class="signal-title">Estimated paid spend doubled — new campaign targeting branded comparison keywords</div>
+              <div class="signal-interp">Vitagen is investing aggressively in conquest keywords with directly comparative copy. A deliberate move into your acquisition funnel rather than general brand building.</div>
+            </div>
+            <div class="signal-time">Mar 6</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-icon-wrap web"><svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 5.5h13" stroke="currentColor" stroke-width="1.3"/></svg></div>
+            <div class="signal-body">
+              <div class="signal-competitor">Peak Fuel · Website</div>
+              <div class="signal-title">Homepage hero copy changed: "Built for Women Who Train" replaces generic headline</div>
+              <div class="signal-interp">Significant messaging shift toward gender-specific positioning. Landing page and ad copy are now fully aligned — a sustained strategic bet on the women's fitness segment.</div>
+            </div>
+            <div class="signal-time">Mar 5</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-icon-wrap hiring"><svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 13c0-3.31 2.46-6 5.5-6s5.5 2.69 5.5 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+            <div class="signal-body">
+              <div class="signal-competitor">Vitagen · Hiring</div>
+              <div class="signal-title">3 new paid media manager roles posted — all focused on Meta and Google</div>
+              <div class="signal-interp">Vitagen is scaling its paid acquisition team. This pattern typically precedes a 60–90 day ramp in paid spend. The current doubling may be only the beginning.</div>
+            </div>
+            <div class="signal-time">Mar 5</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-icon-wrap news"><svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 6h7M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+            <div class="signal-body">
+              <div class="signal-competitor">Peak Fuel · News</div>
+              <div class="signal-title">Featured in Healthline "Best Protein Powders for Women 2026" roundup</div>
+              <div class="signal-interp">Healthline placement drives significant organic traffic and builds category authority. This editorial coverage likely contributed to the keyword ranking jump. Getting into similar roundups should be a PR priority.</div>
+            </div>
+            <div class="signal-time">Mar 4</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-icon-wrap organic"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/></svg></div>
+            <div class="signal-body">
+              <div class="signal-competitor">CoreStrength · Content</div>
+              <div class="signal-title">Zero new content published for 6th consecutive week</div>
+              <div class="signal-interp">CoreStrength's content engine has stalled. Prior ranking strength in recovery nutrition is at risk of decaying. A 6–8 week window to capture those rankings before they recover.</div>
+            </div>
+            <div class="signal-time">Mar 3</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-icon-wrap web"><svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 5.5h13" stroke="currentColor" stroke-width="1.3"/></svg></div>
+            <div class="signal-body">
+              <div class="signal-competitor">Vitagen · Website</div>
+              <div class="signal-title">New "Compare Us" page launched — side-by-side ingredient comparison table</div>
+              <div class="signal-interp">Vitagen is claiming the authority position on ingredient transparency. If your product story is stronger on any dimension, a response page may be warranted.</div>
+            </div>
+            <div class="signal-time">Mar 3</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">Hiring Signals This Week</div>
+        <div class="section-meta">LinkedIn public postings · strategic direction</div>
+      </div>
+
+      <div class="hiring-grid">
+        <div class="hiring-card">
+          <div class="hiring-role">Senior Paid Media Manager — Meta & Google</div>
+          <div class="hiring-meta">Vitagen · Mar 5 · Remote</div>
+          <div class="hiring-signal">3rd paid media hire this month. Spend ramp likely within 60 days.</div>
+        </div>
+        <div class="hiring-card">
+          <div class="hiring-role">Women's Wellness Content Strategist</div>
+          <div class="hiring-meta">Peak Fuel · Mar 4 · Austin, TX</div>
+          <div class="hiring-signal">Confirms women's segment repositioning is a sustained strategic bet, not a test.</div>
+        </div>
+        <div class="hiring-card">
+          <div class="hiring-role">Influencer Partnerships Lead</div>
+          <div class="hiring-meta">Peak Fuel · Mar 3 · Remote</div>
+          <div class="hiring-signal">First influencer-focused hire — signals a move into creator-led growth strategy.</div>
+        </div>
+        <div class="hiring-card">
+          <div class="hiring-role">Head of Retail Sales — National Accounts</div>
+          <div class="hiring-meta">Vitagen · Feb 28 · New York, NY</div>
+          <div class="hiring-signal">DTC-to-retail expansion signal. A 6–12 month strategic shift worth monitoring closely.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  el.classList.add('active');
+}
+
+Chart.defaults.color = '#8fb0b5';
+Chart.defaults.borderColor = 'rgba(246,237,230,0.07)';
+Chart.defaults.font.family = "'Open Sans', sans-serif";
+Chart.defaults.font.size = 11;
+
+const weeks = ['Dec 16','Dec 23','Dec 30','Jan 6','Jan 13','Jan 20','Jan 27','Feb 3','Feb 10','Feb 17','Feb 24','Mar 3','Mar 9'];
+
+new Chart(document.getElementById('pressureChart'), {
+  type: 'line',
+  data: {
+    labels: weeks,
+    datasets: [{ label: 'Pressure', data: [38,42,36,51,48,55,49,58,62,63,57,63,74],
+      borderColor: '#E1885E', backgroundColor: 'rgba(225,136,94,0.07)', fill: true,
+      tension: 0.4, pointRadius: 3, pointBackgroundColor: '#E1885E', borderWidth: 2 }]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins: { legend: { display:false } },
+    scales: {
+      x: { grid: { color:'rgba(246,237,230,0.05)' }, ticks: { maxTicksLimit:7 } },
+      y: { grid: { color:'rgba(246,237,230,0.05)' }, min:0, max:100 }
+    }
+  }
+});
+
+new Chart(document.getElementById('sovChart'), {
+  type: 'line',
+  data: {
+    labels: weeks,
+    datasets: [
+      { label:'Apex', data:[38,37,38,36,35,34,36,35,34,33,32,31,31], borderColor:'#3C6E71', backgroundColor:'rgba(60,110,113,0.06)', fill:true, tension:0.4, pointRadius:2, borderWidth:2.5 },
+      { label:'Peak Fuel', data:[22,23,22,24,25,26,25,27,28,28,29,30,32], borderColor:'#8CBEC6', fill:false, tension:0.4, pointRadius:2, borderWidth:2 },
+      { label:'Vitagen', data:[18,18,19,19,20,21,21,22,22,23,23,24,25], borderColor:'#E1885E', fill:false, tension:0.4, pointRadius:2, borderWidth:2 },
+      { label:'CoreStrength', data:[22,22,21,21,20,19,18,16,16,16,16,15,12], borderColor:'#DCBE4C', fill:false, tension:0.4, pointRadius:2, borderWidth:2, borderDash:[5,3] }
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins: { legend: { display:false } },
+    scales: {
+      x: { grid: { color:'rgba(246,237,230,0.05)' }, ticks: { maxTicksLimit:8 } },
+      y: { grid: { color:'rgba(246,237,230,0.05)' }, ticks: { callback: v => v+'%' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('velocityChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Nov','Dec','Jan','Feb','Mar'],
+    datasets: [
+      { label:'Peak Fuel', data:[3,4,5,6,7], backgroundColor:'rgba(139,190,198,0.75)', borderRadius:4 },
+      { label:'Vitagen', data:[2,3,3,4,5], backgroundColor:'rgba(225,136,94,0.7)', borderRadius:4 },
+      { label:'CoreStrength', data:[3,3,2,1,0], backgroundColor:'rgba(220,190,76,0.55)', borderRadius:4 }
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins: { legend: { display:false } },
+    scales: {
+      x: { grid: { display:false } },
+      y: { grid: { color:'rgba(246,237,230,0.05)' }, ticks: { callback: v => v+'/wk' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('daChart'), {
+  type: 'line',
+  data: {
+    labels: ['Oct','Nov','Dec','Jan','Feb','Mar'],
+    datasets: [
+      { label:'Peak Fuel', data:[48,50,51,53,55,58], borderColor:'#8CBEC6', tension:0.4, pointRadius:3, borderWidth:2, fill:false },
+      { label:'Vitagen', data:[52,53,53,54,55,56], borderColor:'#E1885E', tension:0.4, pointRadius:3, borderWidth:2, fill:false },
+      { label:'CoreStrength', data:[61,61,60,60,59,58], borderColor:'#DCBE4C', tension:0.4, pointRadius:3, borderWidth:2, fill:false, borderDash:[5,3] }
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins: { legend: { display:false } },
+    scales: {
+      x: { grid: { display:false } },
+      y: { grid: { color:'rgba(246,237,230,0.05)' }, min:40, max:70 }
+    }
+  }
+});
+
+new Chart(document.getElementById('paidSovChart'), {
+  type: 'bar',
+  data: {
+    labels: weeks,
+    datasets: [
+      { label:'Apex', data:[28,28,29,27,26,25,26,25,26,25,26,27,25], backgroundColor:'rgba(60,110,113,0.8)', borderRadius:2 },
+      { label:'Peak Fuel', data:[24,24,25,26,27,28,27,28,29,29,28,30,29], backgroundColor:'rgba(139,190,198,0.75)', borderRadius:2 },
+      { label:'Vitagen', data:[18,18,19,20,20,21,22,21,22,23,22,24,31], backgroundColor:'rgba(225,136,94,0.75)', borderRadius:2 },
+      { label:'CoreStrength', data:[14,14,13,13,12,12,11,11,10,10,10,9,8], backgroundColor:'rgba(220,190,76,0.6)', borderRadius:2 }
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins: { legend: { display:false } },
+    scales: {
+      x: { grid: { display:false }, ticks: { maxTicksLimit:8 } },
+      y: { grid: { color:'rgba(246,237,230,0.05)' }, ticks: { callback: v => v+'%' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('socialChart'), {
+  type: 'line',
+  data: {
+    labels: weeks,
+    datasets: [
+      { label:'Peak Fuel', data:[1.2,1.4,1.8,2.1,2.4,3.0,2.8,3.2,3.5,3.8,4.0,4.1,4.2], borderColor:'#8CBEC6', tension:0.4, pointRadius:2, borderWidth:2, fill:false },
+      { label:'Vitagen', data:[0.8,0.9,1.0,1.1,1.2,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1], borderColor:'#E1885E', tension:0.4, pointRadius:2, borderWidth:2, fill:false },
+      { label:'CoreStrength', data:[1.2,1.1,1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.4,0.3,0.3,0.3], borderColor:'#DCBE4C', tension:0.4, pointRadius:2, borderWidth:2, fill:false, borderDash:[5,3] }
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins: { legend: { display:false } },
+    scales: {
+      x: { grid: { color:'rgba(246,237,230,0.05)' }, ticks: { maxTicksLimit:8 } },
+      y: { grid: { color:'rgba(246,237,230,0.05)' }, ticks: { callback: v => v+'K' } }
+    }
+  }
+});
+</script>
+</body>
+</html>
