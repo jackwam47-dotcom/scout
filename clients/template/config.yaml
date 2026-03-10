@@ -1,1 +1,54 @@
-# client config template
+# Scout Client Configuration Template
+# Copy this file to clients/{client-slug}/config.yaml
+# Fill in all fields before running collectors
+
+client:
+  name: "Apex Nutrition"
+  slug: "apex-nutrition"
+  domain: "apexnutrition.com"
+  vertical: "health_wellness"  # health_wellness | fitness | beauty | food_beverage
+
+competitors:
+  - name: "Peak Fuel"
+    domain: "peakfuel.com"
+    reddit_search_terms:
+      - "peak fuel protein"
+      - "peakfuel"
+  
+  - name: "Vitagen"
+    domain: "vitagen.com"
+    reddit_search_terms:
+      - "vitagen supplements"
+  
+  - name: "CoreStrength"
+    domain: "corestrength.com"
+    reddit_search_terms:
+      - "corestrength protein"
+      - "core strength supplements"
+
+# Reddit subreddits to monitor (override defaults in reddit_collector.py)
+reddit_subreddits:
+  - Supplements
+  - nutrition
+  - fitness
+  - bodybuilding
+  - veganfitness
+
+# Semrush settings
+semrush:
+  database: "us"  # us | uk | ca | au
+  organic_limit: 50
+  paid_limit: 25
+
+# Keywords to specifically track (will highlight in briefings)
+tracked_keywords:
+  - "protein powder"
+  - "pre workout"
+  - "bcaa supplements"
+  - "whey protein isolate"
+  - "plant based protein"
+
+# Notification settings (future feature)
+notifications:
+  slack_webhook: ""
+  email: ""
