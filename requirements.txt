@@ -5,3 +5,4 @@ feedparser>=6.0.11
 requests>=2.31.0
 python-dotenv>=1.0.0
 pytrends>=4.9.2
+playwright>=1.42.0
