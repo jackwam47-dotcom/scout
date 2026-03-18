@@ -507,6 +507,9 @@ function showPage(id,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   el.classList.add('active');
+  setTimeout(()=>{
+    Object.values(Chart.instances||{}).forEach(c=>{try{c.resize();}catch(e){}});
+  },50);
 }
 
 // ── RENDER FUNCTIONS ──────────────────────────────────────────────────────────
