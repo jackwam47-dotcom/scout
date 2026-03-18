@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Install Playwright browsers
+        run: playwright install chromium --with-deps
+
       - name: Get active clients
         id: get-clients
         run: |
@@ -100,6 +103,20 @@ jobs:
           clients = json.load(sys.stdin)
           for slug in clients:
               subprocess.run(['python', 'collectors/trends_collector.py', slug], check=False)
+            "
+          fi
+
+      - name: Run Web Change Detector
+        run: |
+          INPUT_SLUG="${{ github.event.inputs.client_slug }}"
+          if [ -n "$INPUT_SLUG" ]; then
+            python collectors/web_change_detector.py "$INPUT_SLUG"
+          else
+            echo '${{ steps.get-clients.outputs.clients }}' | python -c "
+          import sys, json, subprocess
+          clients = json.load(sys.stdin)
+          for slug in clients:
+              subprocess.run(['python', 'collectors/web_change_detector.py', slug], check=False)
             "
           fi
 
