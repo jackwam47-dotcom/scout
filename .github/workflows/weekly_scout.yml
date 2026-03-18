@@ -1,11 +1,8 @@
 name: Scout Weekly Intelligence Run
 
 on:
-  # Run every Monday at 6am ET (11am UTC)
   schedule:
     - cron: '0 11 * * 1'
-  
-  # Allow manual trigger from GitHub Actions UI
   workflow_dispatch:
     inputs:
       client_slug:
@@ -24,7 +21,7 @@ env:
 jobs:
   collect-and-synthesize:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -89,6 +86,20 @@ jobs:
           clients = json.load(sys.stdin)
           for slug in clients:
               subprocess.run(['python', 'collectors/reddit_collector.py', slug], check=False)
+            "
+          fi
+
+      - name: Run Trends collector
+        run: |
+          INPUT_SLUG="${{ github.event.inputs.client_slug }}"
+          if [ -n "$INPUT_SLUG" ]; then
+            python collectors/trends_collector.py "$INPUT_SLUG"
+          else
+            echo '${{ steps.get-clients.outputs.clients }}' | python -c "
+          import sys, json, subprocess
+          clients = json.load(sys.stdin)
+          for slug in clients:
+              subprocess.run(['python', 'collectors/trends_collector.py', slug], check=False)
             "
           fi
 
