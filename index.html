@@ -781,6 +781,17 @@
   .hiring-meta { font-family: var(--font-head); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
   .hiring-signal { font-family: var(--font-body); font-size: 12px; color: var(--mustard); font-style: italic; line-height: 1.5; }
 
+  /* ── TRENDS SECTION ── */
+  .trends-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 18px; }
+  .trend-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+  }
+  .trend-label { font-family: var(--font-head); font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 7px; }
+  .trend-val { font-family: var(--font-head); font-size: 23px; font-weight: 700; color: var(--linen); margin-bottom: 3px; }
+  .trend-note { font-family: var(--font-body); font-size: 11px; color: var(--muted); }
+
   .divider { height: 1px; background: var(--border); margin: 22px 0; }
 
   ::-webkit-scrollbar { width: 4px; }
@@ -804,7 +815,7 @@
   </div>
   <div class="client-badge">
     <div class="client-badge-label">Monitoring client</div>
-    <div class="client-badge-name">Apex Nutrition</div>
+    <div class="client-badge-name" id="sidebar-client-name">Apex Nutrition</div>
   </div>
   <div class="nav-section">Intelligence</div>
   <div class="nav-item active" onclick="showPage('overview',this)">
@@ -823,21 +834,25 @@
     <svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="4" r="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="2.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 10c.5-2 1.5-3 3-3s2.5 1 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
     Social
   </div>
+  <div class="nav-item" onclick="showPage('trends',this)">
+    <svg viewBox="0 0 15 15" fill="none"><path d="M1 11L4 7l3 2 3-5 4 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Demand Trends
+  </div>
   <div class="nav-item" onclick="showPage('signals',this)">
     <svg viewBox="0 0 15 15" fill="none"><path d="M1 11L5 5l3 4 2-3 4 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
     All Signals
   </div>
   <div class="sidebar-footer">
-    <div class="week-badge"><div class="week-dot"></div>Mar 3–9, 2026</div>
+    <div class="week-badge"><div class="week-dot"></div><span id="sidebar-week">Mar 3–9, 2026</span></div>
   </div>
 </nav>
 
 <!-- MAIN -->
 <main class="main">
   <div class="topbar">
-    <div class="topbar-title">Apex Nutrition — Competitive Intelligence</div>
+    <div class="topbar-title" id="topbar-title">Apex Nutrition — Competitive Intelligence</div>
     <div class="topbar-right">
-      <div class="date-chip">Mar 9, 2026</div>
+      <div class="date-chip" id="topbar-date">Mar 9, 2026</div>
       <button class="export-btn">↓ Export Brief</button>
     </div>
   </div>
@@ -848,17 +863,17 @@
       <div class="pressure-hero">
         <div class="pressure-score-wrap">
           <div class="pressure-eyebrow">Competitive Pressure Score</div>
-          <div class="pressure-score">74</div>
-          <div class="pressure-delta">↑ +11 from last week</div>
+          <div class="pressure-score" id="hero-score">74</div>
+          <div class="pressure-delta" id="hero-delta">↑ +11 from last week</div>
         </div>
         <div>
-          <div class="pressure-title">Elevated activity across organic<br>and paid channels this week</div>
-          <div class="pressure-desc">Peak Fuel entered the top 3 for your highest-converting keyword cluster. Vitagen doubled paid ad spend estimates. Highest pressure score in 8 weeks — review the developments and recommended actions below.</div>
-          <div class="pressure-breakdown">
-            <div class="breakdown-item"><div class="breakdown-item-label">Organic</div><div class="breakdown-item-val" style="color:var(--coral)">82</div></div>
-            <div class="breakdown-item"><div class="breakdown-item-label">Paid</div><div class="breakdown-item-val" style="color:var(--mustard)">71</div></div>
-            <div class="breakdown-item"><div class="breakdown-item-label">Social</div><div class="breakdown-item-val" style="color:var(--bubble)">58</div></div>
-            <div class="breakdown-item"><div class="breakdown-item-label">Signals</div><div class="breakdown-item-val" style="color:var(--spring)">44</div></div>
+          <div class="pressure-title" id="hero-title">Elevated activity across organic<br>and paid channels this week</div>
+          <div class="pressure-desc" id="hero-desc">Peak Fuel entered the top 3 for your highest-converting keyword cluster. Vitagen doubled paid ad spend estimates. Highest pressure score in 8 weeks — review the developments and recommended actions below.</div>
+          <div class="pressure-breakdown" id="hero-breakdown">
+            <div class="breakdown-item"><div class="breakdown-item-label">Organic</div><div class="breakdown-item-val" style="color:var(--coral)" id="score-organic">82</div></div>
+            <div class="breakdown-item"><div class="breakdown-item-label">Paid</div><div class="breakdown-item-val" style="color:var(--mustard)" id="score-paid">71</div></div>
+            <div class="breakdown-item"><div class="breakdown-item-label">Social</div><div class="breakdown-item-val" style="color:var(--bubble)" id="score-social">58</div></div>
+            <div class="breakdown-item"><div class="breakdown-item-label">Signals</div><div class="breakdown-item-val" style="color:var(--spring)" id="score-signals">44</div></div>
           </div>
         </div>
       </div>
@@ -871,11 +886,11 @@
       </div>
 
       <div class="section-header">
-        <div class="section-title">Top 3 Developments This Week</div>
+        <div class="section-title">Top Developments This Week</div>
         <div class="section-meta">AI-synthesized · Analyst reviewed</div>
       </div>
 
-      <div class="highlights">
+      <div class="highlights" id="developments-grid">
         <div class="highlight-card alert">
           <div class="highlight-type">🔴 Alert</div>
           <div class="highlight-title">Peak Fuel enters top 3 for "protein powder for women"</div>
@@ -915,7 +930,7 @@
       <div class="page-header">
         <div class="page-eyebrow">Intelligence</div>
         <div class="page-header-title">Organic Search</div>
-        <div class="page-header-sub">Share of voice, keyword movement, and content velocity across 4 competitors</div>
+        <div class="page-header-sub">Share of voice, keyword movement, and content velocity across competitors</div>
       </div>
 
       <div class="chart-card">
@@ -954,9 +969,9 @@
       </div>
 
       <div class="chart-card">
-        <table class="data-table">
+        <table class="data-table" id="keyword-table">
           <thead><tr><th>Keyword</th><th>Competitor</th><th>Position</th><th>Change</th><th>Volume</th><th>Your Overlap</th></tr></thead>
-          <tbody>
+          <tbody id="keyword-tbody">
             <tr><td><span class="kw">protein powder for women</span></td><td><span class="comp-label">Peak Fuel</span></td><td><span class="pos-badge good">#3</span></td><td><span class="chg up">↑ +14</span></td><td>22,000</td><td><span style="color:var(--coral);font-family:var(--font-head);font-size:11px;font-weight:600">You rank #5</span></td></tr>
             <tr><td><span class="kw">best whey protein isolate</span></td><td><span class="comp-label">Vitagen</span></td><td><span class="pos-badge good">#2</span></td><td><span class="chg up">↑ +8</span></td><td>18,500</td><td><span style="color:var(--mustard);font-family:var(--font-head);font-size:11px;font-weight:600">You rank #4</span></td></tr>
             <tr><td><span class="kw">plant protein powder review</span></td><td><span class="comp-label">CoreStrength</span></td><td><span class="pos-badge mid">#8</span></td><td><span class="chg down">↓ −6</span></td><td>9,200</td><td><span style="color:var(--spring);font-family:var(--font-head);font-size:11px;font-weight:600">Gap — you rank #3</span></td></tr>
@@ -1006,7 +1021,7 @@
         <div class="section-meta">New or changed ads detected · flagged for review</div>
       </div>
 
-      <div class="ad-grid">
+      <div class="ad-grid" id="ad-grid">
         <div class="ad-card">
           <div class="ad-card-meta"><span class="ad-comp-tag">Peak Fuel</span><span class="ad-change-tag">New this week</span></div>
           <div class="ad-headline">Women's Protein, Finally Done Right</div>
@@ -1044,7 +1059,7 @@
         <div class="page-header-sub">Follower growth, content velocity, and engagement signals across YouTube, Instagram, and Reddit</div>
       </div>
 
-      <div class="social-metrics">
+      <div class="social-metrics" id="social-metrics-grid">
         <div class="social-metric"><div class="social-platform">YouTube · Subscribers</div><div class="social-count" style="color:var(--coral)">284K</div><div class="social-brand">Peak Fuel · +4.2K this week</div></div>
         <div class="social-metric"><div class="social-platform">YouTube · Subscribers</div><div class="social-count" style="color:var(--mustard)">198K</div><div class="social-brand">Vitagen · +2.1K this week</div></div>
         <div class="social-metric"><div class="social-platform">YouTube · Subscribers</div><div class="social-count" style="color:var(--dove)">91K</div><div class="social-brand">CoreStrength · +0.3K this week</div></div>
@@ -1073,11 +1088,11 @@
 
       <div class="section-header">
         <div class="section-title">Reddit — Notable Threads This Week</div>
-        <div class="section-meta">r/Supplements · r/Fitness · r/nutrition</div>
+        <div class="section-meta" id="reddit-subreddits">r/Supplements · r/Fitness · r/nutrition</div>
       </div>
 
       <div class="chart-card">
-        <div class="signals-feed">
+        <div class="signals-feed" id="reddit-feed">
           <div class="signal-item">
             <div class="signal-icon-wrap social"><svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M10 7.5c0 1.38-1.12 2.5-2.5 2.5S5 8.88 5 7.5 6.12 5 7.5 5 10 6.12 10 7.5z" stroke="currentColor" stroke-width="1.3"/></svg></div>
             <div class="signal-body">
@@ -1110,13 +1125,91 @@
     </div>
   </div>
 
+  <!-- DEMAND TRENDS -->
+  <div id="page-trends" class="page">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-eyebrow">Intelligence</div>
+        <div class="page-header-title">Demand Trends</div>
+        <div class="page-header-sub">Google Trends search interest data — brand and category level, 90-day rolling window</div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-eyebrow">Brand Interest</div>
+            <div class="chart-title">Search Interest Over Time — All Brands</div>
+            <div class="chart-subtitle">Google Trends relative interest score (0–100) · US · 90 days</div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#3C6E71"></div>Apex</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#8CBEC6"></div>Peak Fuel</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#E1885E"></div>Vitagen</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#DCBE4C"></div>CoreStrength</div>
+          </div>
+        </div>
+        <div class="chart-wrap tall"><canvas id="trendsChart"></canvas></div>
+      </div>
+
+      <div class="two-col">
+        <div class="chart-card" style="margin-bottom:0">
+          <div class="chart-header"><div><div class="chart-eyebrow">Category</div><div class="chart-title">Category Keyword Trends</div><div class="chart-subtitle">Search interest for core category terms</div></div></div>
+          <div class="chart-wrap"><canvas id="categoryTrendsChart"></canvas></div>
+        </div>
+        <div class="chart-card" style="margin-bottom:0">
+          <div class="chart-header"><div><div class="chart-eyebrow">Geography</div><div class="chart-title">Interest by US Region</div><div class="chart-subtitle">Where demand is strongest for your category</div></div></div>
+          <div class="chart-wrap"><canvas id="geoChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-header">
+        <div class="section-title">Rising Queries This Week</div>
+        <div class="section-meta">Breakout searches around competitor brands</div>
+      </div>
+
+      <div class="chart-card">
+        <div class="signals-feed" id="rising-queries-feed">
+          <div class="signal-item">
+            <div class="signal-icon-wrap organic"><svg viewBox="0 0 15 15" fill="none"><path d="M1 11L5 5l3 4 2-3 4 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="signal-body">
+              <div class="signal-competitor">Peak Fuel · Rising Query</div>
+              <div class="signal-title">"peak fuel womens protein review" — +320% search interest</div>
+              <div class="signal-interp">Breakout query correlated with their new women's campaign launch. Strong signal that their repositioning is driving consumer investigation.</div>
+            </div>
+            <div class="signal-time">This week</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-icon-wrap organic"><svg viewBox="0 0 15 15" fill="none"><path d="M1 11L5 5l3 4 2-3 4 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="signal-body">
+              <div class="signal-competitor">Vitagen · Rising Query</div>
+              <div class="signal-title">"vitagen vs apex nutrition" — +180% search interest</div>
+              <div class="signal-interp">Direct comparison query rising in parallel with Vitagen's conquest ad campaign. Consumers are actively comparing. Your comparison content should rank here.</div>
+            </div>
+            <div class="signal-time">This week</div>
+          </div>
+          <div class="signal-item">
+            <div class="signal-icon-wrap organic"><svg viewBox="0 0 15 15" fill="none"><path d="M1 11L5 5l3 4 2-3 4 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="signal-body">
+              <div class="signal-competitor">Category · Rising Query</div>
+              <div class="signal-title">"protein powder without artificial sweeteners" — +95% search interest</div>
+              <div class="signal-interp">Category-level shift in consumer demand toward clean label. Peak Fuel's new messaging is aligned with this trend. Consider whether your product pages address this concern explicitly.</div>
+            </div>
+            <div class="signal-time">This week</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- SIGNALS -->
   <div id="page-signals" class="page">
     <div class="page-content">
       <div class="page-header">
         <div class="page-eyebrow">Intelligence</div>
         <div class="page-header-title">All Signals</div>
-        <div class="page-header-sub">Complete intelligence feed for the week of Mar 3–9, 2026 · AI-interpreted and analyst reviewed</div>
+        <div class="page-header-sub" id="signals-subhead">Complete intelligence feed · AI-interpreted and analyst reviewed</div>
       </div>
 
       <div class="comp-pills">
@@ -1127,7 +1220,7 @@
       </div>
 
       <div class="chart-card">
-        <div class="signals-feed">
+        <div class="signals-feed" id="signals-feed">
           <div class="signal-item">
             <div class="signal-icon-wrap organic"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/></svg></div>
             <div class="signal-body">
@@ -1199,7 +1292,7 @@
         <div class="section-meta">LinkedIn public postings · strategic direction</div>
       </div>
 
-      <div class="hiring-grid">
+      <div class="hiring-grid" id="hiring-grid">
         <div class="hiring-card">
           <div class="hiring-role">Senior Paid Media Manager — Meta & Google</div>
           <div class="hiring-meta">Vitagen · Mar 5 · Remote</div>
@@ -1228,6 +1321,120 @@
 </div>
 
 <script>
+// ── SCOUT DATA INJECTION ──────────────────────────────────────────────────────
+// The dashboard_builder.py script replaces the block between these comments
+// with real data from Supabase. When no real data is present, the demo data
+// above renders by default.
+// SCOUT_DATA_START
+const scoutData = null; // replaced by builder with real JSON
+// SCOUT_DATA_END
+
+// ── DATA RENDERING ────────────────────────────────────────────────────────────
+function applyScoutData(data) {
+  if (!data) return; // use demo HTML as-is
+
+  // Meta
+  if (data.meta) {
+    const cn = data.meta.clientName || 'Client';
+    document.getElementById('sidebar-client-name').textContent = cn;
+    document.getElementById('topbar-title').textContent = cn + ' — Competitive Intelligence';
+    if (data.meta.weekOf) {
+      const d = new Date(data.meta.weekOf);
+      const fmt = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+      document.getElementById('topbar-date').textContent = fmt;
+      document.getElementById('sidebar-week').textContent = 'Week of ' + fmt;
+      document.getElementById('signals-subhead').textContent =
+        'Complete intelligence feed for week of ' + fmt + ' · AI-interpreted and analyst reviewed';
+    }
+  }
+
+  // Pressure score
+  if (data.pressureScore !== undefined) {
+    document.getElementById('hero-score').textContent = data.pressureScore;
+  }
+
+  // Delta
+  if (data.weekOverWeek && data.weekOverWeek.pressure_score_delta !== undefined) {
+    const delta = data.weekOverWeek.pressure_score_delta;
+    const sign = delta >= 0 ? '↑ +' : '↓ ';
+    document.getElementById('hero-delta').textContent = sign + delta + ' from last week';
+  }
+
+  // Summary
+  if (data.executiveSummary) {
+    document.getElementById('hero-desc').textContent = data.executiveSummary;
+  }
+
+  // Component scores
+  if (data.pressureComponents) {
+    const pc = data.pressureComponents;
+    if (pc.organic_search !== undefined) document.getElementById('score-organic').textContent = pc.organic_search;
+    if (pc.paid_search !== undefined) document.getElementById('score-paid').textContent = pc.paid_search;
+    if (pc.social_buzz !== undefined) document.getElementById('score-social').textContent = pc.social_buzz;
+    if (pc.content_velocity !== undefined) document.getElementById('score-signals').textContent = pc.content_velocity;
+  }
+
+  // Top developments
+  if (data.topDevelopments && data.topDevelopments.length > 0) {
+    const typeMap = { alert: '🔴 Alert', watch: '🟡 Watch', opportunity: '🟢 Opportunity' };
+    const grid = document.getElementById('developments-grid');
+    grid.innerHTML = data.topDevelopments.slice(0, 3).map(dev => `
+      <div class="highlight-card ${dev.type}">
+        <div class="highlight-type">${typeMap[dev.type] || dev.type}</div>
+        <div class="highlight-title">${dev.headline}</div>
+        <div class="highlight-body">${dev.detail}</div>
+        <div class="highlight-action">${dev.recommended_action}</div>
+      </div>`).join('');
+  }
+
+  // Keyword movements
+  if (data.keywordMovements && data.keywordMovements.length > 0) {
+    const tbody = document.getElementById('keyword-tbody');
+    tbody.innerHTML = data.keywordMovements.map(kw => {
+      const pos = kw.current_position;
+      const badgeClass = pos <= 3 ? 'good' : pos <= 10 ? 'mid' : 'bad';
+      const chgClass = kw.position_change > 0 ? 'up' : 'down';
+      const chgArrow = kw.position_change > 0 ? '↑ +' : '↓ ';
+      const overlapText = kw.overlap_with_client
+        ? `<span style="color:var(--coral);font-family:var(--font-head);font-size:11px;font-weight:600">Overlaps</span>`
+        : `<span style="color:var(--dove);font-family:var(--font-head);font-size:11px;font-weight:600">No overlap</span>`;
+      return `<tr>
+        <td><span class="kw">${kw.keyword}</span></td>
+        <td><span class="comp-label">${kw.competitor}</span></td>
+        <td><span class="pos-badge ${badgeClass}">#${pos}</span></td>
+        <td><span class="chg ${chgClass}">${chgArrow}${Math.abs(kw.position_change)}</span></td>
+        <td>${(kw.monthly_volume || 0).toLocaleString()}</td>
+        <td>${overlapText}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Reddit intelligence
+  if (data.redditIntelligence && data.redditIntelligence.length > 0) {
+    const feed = document.getElementById('reddit-feed');
+    const svgIcon = `<svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M10 7.5c0 1.38-1.12 2.5-2.5 2.5S5 8.88 5 7.5 6.12 5 7.5 5 10 6.12 10 7.5z" stroke="currentColor" stroke-width="1.3"/></svg>`;
+    feed.innerHTML = data.redditIntelligence.map(r => `
+      <div class="signal-item">
+        <div class="signal-icon-wrap social">${svgIcon}</div>
+        <div class="signal-body">
+          <div class="signal-competitor">${r.competitor} · Reddit · ${r.sentiment}</div>
+          <div class="signal-title">"${r.top_post_title}"</div>
+          <div class="signal-interp">${r.strategic_note}</div>
+        </div>
+        <div class="signal-time">${r.engagement_level} engagement</div>
+      </div>`).join('');
+  }
+
+  // Pressure history chart — override with real data if available
+  if (data.pressureHistory && data.pressureHistory.length > 0) {
+    window._realPressureHistory = data.pressureHistory;
+  }
+}
+
+// Run data injection before charts render
+applyScoutData(scoutData);
+
+// ── PAGE NAV ──────────────────────────────────────────────────────────────────
 function showPage(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1235,6 +1442,7 @@ function showPage(id, el) {
   el.classList.add('active');
 }
 
+// ── CHARTS ────────────────────────────────────────────────────────────────────
 Chart.defaults.color = '#8fb0b5';
 Chart.defaults.borderColor = 'rgba(246,237,230,0.07)';
 Chart.defaults.font.family = "'Open Sans', sans-serif";
@@ -1242,11 +1450,19 @@ Chart.defaults.font.size = 11;
 
 const weeks = ['Dec 16','Dec 23','Dec 30','Jan 6','Jan 13','Jan 20','Jan 27','Feb 3','Feb 10','Feb 17','Feb 24','Mar 3','Mar 9'];
 
+// Pressure chart — use real history if available
+const pressureLabels = window._realPressureHistory
+  ? window._realPressureHistory.map(h => h.date)
+  : weeks;
+const pressureData = window._realPressureHistory
+  ? window._realPressureHistory.map(h => h.score)
+  : [38,42,36,51,48,55,49,58,62,63,57,63,74];
+
 new Chart(document.getElementById('pressureChart'), {
   type: 'line',
   data: {
-    labels: weeks,
-    datasets: [{ label: 'Pressure', data: [38,42,36,51,48,55,49,58,62,63,57,63,74],
+    labels: pressureLabels,
+    datasets: [{ label: 'Pressure', data: pressureData,
       borderColor: '#E1885E', backgroundColor: 'rgba(225,136,94,0.07)', fill: true,
       tension: 0.4, pointRadius: 3, pointBackgroundColor: '#E1885E', borderWidth: 2 }]
   },
@@ -1352,6 +1568,72 @@ new Chart(document.getElementById('socialChart'), {
     scales: {
       x: { grid: { color:'rgba(246,237,230,0.05)' }, ticks: { maxTicksLimit:8 } },
       y: { grid: { color:'rgba(246,237,230,0.05)' }, ticks: { callback: v => v+'K' } }
+    }
+  }
+});
+
+// ── DEMAND TRENDS CHARTS ──────────────────────────────────────────────────────
+const trendDates = Array.from({length:13}, (_,i) => {
+  const d = new Date('2025-12-15');
+  d.setDate(d.getDate() + i*7);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+});
+
+new Chart(document.getElementById('trendsChart'), {
+  type: 'line',
+  data: {
+    labels: trendDates,
+    datasets: [
+      { label:'Apex', data:[45,48,42,50,47,52,49,55,53,57,54,58,56], borderColor:'#3C6E71', backgroundColor:'rgba(60,110,113,0.06)', fill:true, tension:0.4, pointRadius:2, borderWidth:2.5 },
+      { label:'Peak Fuel', data:[38,40,42,45,48,50,52,55,58,62,65,68,72], borderColor:'#8CBEC6', fill:false, tension:0.4, pointRadius:2, borderWidth:2 },
+      { label:'Vitagen', data:[32,33,35,36,38,40,41,43,44,46,47,50,52], borderColor:'#E1885E', fill:false, tension:0.4, pointRadius:2, borderWidth:2 },
+      { label:'CoreStrength', data:[55,53,51,50,48,46,44,42,40,38,36,34,32], borderColor:'#DCBE4C', fill:false, tension:0.4, pointRadius:2, borderWidth:2, borderDash:[5,3] }
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins: { legend: { display:false } },
+    scales: {
+      x: { grid: { color:'rgba(246,237,230,0.05)' }, ticks: { maxTicksLimit:8 } },
+      y: { grid: { color:'rgba(246,237,230,0.05)' }, min:0, max:100, ticks: { callback: v => v } }
+    }
+  }
+});
+
+new Chart(document.getElementById('categoryTrendsChart'), {
+  type: 'line',
+  data: {
+    labels: trendDates,
+    datasets: [
+      { label:'protein powder', data:[62,65,61,68,70,72,69,74,76,78,75,80,82], borderColor:'#8CBEC6', tension:0.4, pointRadius:2, borderWidth:2, fill:false },
+      { label:'plant protein', data:[40,42,44,45,48,50,52,55,57,60,62,65,68], borderColor:'#C6EB4C', tension:0.4, pointRadius:2, borderWidth:2, fill:false },
+      { label:'whey isolate', data:[55,54,56,58,57,59,60,61,60,62,63,64,66], borderColor:'#E1885E', tension:0.4, pointRadius:2, borderWidth:2, fill:false, borderDash:[5,3] }
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins: { legend: { labels: { boxWidth:10, font:{size:10} } } },
+    scales: {
+      x: { grid: { display:false }, ticks: { maxTicksLimit:6 } },
+      y: { grid: { color:'rgba(246,237,230,0.05)' }, min:0, max:100 }
+    }
+  }
+});
+
+new Chart(document.getElementById('geoChart'), {
+  type: 'bar',
+  data: {
+    labels: ['California','Texas','Florida','New York','Colorado','Washington','Georgia','Arizona','Illinois','Oregon'],
+    datasets: [{
+      label: 'Interest',
+      data: [100,88,76,72,68,65,60,58,54,52],
+      backgroundColor: 'rgba(60,110,113,0.75)',
+      borderRadius: 4,
+    }]
+  },
+  options: { responsive:true, maintainAspectRatio:false, indexAxis:'y',
+    plugins: { legend: { display:false } },
+    scales: {
+      x: { grid: { color:'rgba(246,237,230,0.05)' }, min:0, max:100 },
+      y: { grid: { display:false }, ticks: { font:{size:10} } }
     }
   }
 });
