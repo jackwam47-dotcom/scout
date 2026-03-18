@@ -590,7 +590,8 @@ function renderOrganic(data) {
 }
 
 function renderContent(data) {
-  if (!data.contentSignals?.length) return;
+  // Only update content signals if we have at least 2 — otherwise keep static HTML
+  if (!data.contentSignals?.length || data.contentSignals.length < 2) return;
   const container = document.getElementById('content-signals-container');
   if (!container) return;
   container.innerHTML = data.contentSignals.map(s => `
@@ -602,7 +603,9 @@ function renderContent(data) {
 }
 
 function renderSignals(data) {
-  if (!data.topDevelopments?.length) return;
+  // All Signals tab has richer static HTML — only replace if live data has 5+ items
+  // so we don't overwrite detailed signals with sparse API data
+  if (!data.topDevelopments?.length || data.topDevelopments.length < 5) return;
   const feed = document.getElementById('all-signals-feed');
   if (!feed) return;
   const icons = {
@@ -777,52 +780,8 @@ safeChart('geoChart',{
   }
 });
 
-// Pre-populate All Signals with static data as fallback before live data loads
-const signalsFeed = document.getElementById('all-signals-feed');
-if (signalsFeed && signalsFeed.children.length === 0) {
-  const alertIcon = `<svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1L14 13H1L7.5 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M7.5 6v3.5M7.5 11v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`;
-  const newsIcon = `<svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 6h7M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`;
-  const webIcon = `<svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 5.5h13" stroke="currentColor" stroke-width="1.3"/></svg>`;
-  const socialIcon = `<svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="4" r="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="2.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 10c.5-2 1.5-3 3-3s2.5 1 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`;
-  const organicIcon = `<svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/></svg>`;
-
-  signalsFeed.innerHTML = [
-    {cls:'alert-icon',icon:alertIcon,comp:'Sleep Number · Financial',title:'Going concern bankruptcy warning filed — sales down 16%',interp:'Sleep Number\'s financial distress creates immediate market opportunity. Consumers considering Sleep Number purchases will be in research mode. Mattress Warehouse should activate competitive trade-in offers and targeted digital campaigns now.',time:'Mar 18'},
-    {cls:'news',icon:newsIcon,comp:'Mattress Firm · Legal',title:'Class action lawsuits filed — fake limited-time sales practices alleged',interp:'Despite legal challenges, Mattress Firm holds 21.88% organic traffic share. The lawsuits create a credibility opening — Mattress Warehouse\'s transparent pricing is a competitive differentiator worth amplifying in messaging now.',time:'Mar 18'},
-    {cls:'web',icon:webIcon,comp:'Sleep Number · Website',title:'Five new mattresses launched during going concern warnings',interp:'New product launches during bankruptcy proceedings signals misaligned priorities. Consumers and analysts will notice the contradiction. Competitive messaging opportunity around stability and trust.',time:'Mar 18'},
-    {cls:'social',icon:socialIcon,comp:'Sleep Number · Partnerships',title:'Travis Kelce signed as strategic partner during bankruptcy proceedings',interp:'Celebrity spend while issuing going concern warnings is a credibility risk. The contradiction between marketing investment and financial distress is the kind of story consumer media amplifies.',time:'Mar 18'},
-    {cls:'organic',icon:organicIcon,comp:'Mattress Firm · Technology',title:'AI-powered store associate tools rolled out nationally',interp:'Operational technology investment reduces headcount costs under legal pressure. Their in-store experience becomes more automated — a differentiation opportunity for Mattress Warehouse\'s human-first service model.',time:'Mar 18'},
-    {cls:'web',icon:webIcon,comp:'Purple · Product',title:'New bed frame collections launched — complete sleep ecosystem play',interp:'Purple\'s DTC stickiness grows with each product category they add. Mattress Warehouse carries Purple — ensure new frame products are in store before they drive customers direct.',time:'Mar 18'},
-    {cls:'organic',icon:organicIcon,comp:'Mattress Firm · Search',title:'"mattress stores" moves to #2 — 33,100 monthly searches',interp:'High-volume category keyword with direct overlap. Local SEO for "mattress stores near me" variants is the most defensible angle against Mattress Firm\'s national scale.',time:'Mar 18'},
-  ].map(s=>`
-    <div class="signal-item">
-      <div class="signal-icon-wrap ${s.cls}">${s.icon}</div>
-      <div class="signal-body">
-        <div class="signal-competitor">${s.comp}</div>
-        <div class="signal-title">${s.title}</div>
-        <div class="signal-interp">${s.interp}</div>
-      </div>
-      <div class="signal-time">${s.time}</div>
-    </div>`).join('');
-}
-
-// Also pre-populate content signals
-const contentContainer = document.getElementById('content-signals-container');
-if (contentContainer && contentContainer.children.length === 0) {
-  contentContainer.innerHTML = [
-    {comp:'Sleep Number',title:'Five new mattresses launched — portfolio redesign during going concern warnings',impl:'Attempting product innovation during a bankruptcy warning signals desperation rather than strength. New product launches without stable financials are a red flag consumers will notice — an opportunity for Mattress Warehouse to position on reliability and longevity.'},
-    {comp:'Mattress Firm',title:'AI-powered store associate efficiency tools rolled out at scale',impl:'Operational technology investment is a margin-protection play amid legal costs. Their in-store experience may become more automated — making Mattress Warehouse\'s human-first service model a clearer differentiator worth amplifying in marketing.'},
-    {comp:'Purple',title:'New bed frame collections launched — expanding into complete sleep ecosystem',impl:'Purple\'s expansion beyond mattresses increases their DTC stickiness. Mattress Warehouse carries Purple — ensure new frame products are represented in store before they drive customers to Purple\'s direct channel.'},
-    {comp:'Sleep Number',title:'Travis Kelce partnership announced amid bankruptcy proceedings',impl:'Signing a celebrity while issuing going concern warnings creates a credibility contradiction consumer media will amplify. An opportunity to contrast Mattress Warehouse\'s grounded, customer-first brand against celebrity spend during a crisis.'},
-  ].map(s=>`
-    <div class="content-signal-card">
-      <div class="content-signal-comp">${s.comp}</div>
-      <div class="content-signal-title">${s.title}</div>
-      <div class="content-signal-impl">${s.impl}</div>
-    </div>`).join('');
-}
-
-// Load live data on page load — will update above with fresh Supabase data
+// Load live data on page load — updates overview, organic, pressure chart
+// Static HTML in other tabs serves as fallback until richer live data is available
 loadScoutData();
 </script>
 </body>
