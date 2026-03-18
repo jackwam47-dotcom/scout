@@ -1326,8 +1326,139 @@
 // with real data from Supabase. When no real data is present, the demo data
 // above renders by default.
 // SCOUT_DATA_START
-const scoutData = null; // replaced by builder with real JSON
-// SCOUT_DATA_END
+        const scoutData = {
+  "meta": {
+    "clientName": "Mattress Warehouse",
+    "weekOf": "2026-03-18",
+    "generatedAt": "2026-03-18"
+  },
+  "pressureScore": 78,
+  "pressureComponents": {
+    "organic_search": 75,
+    "paid_search": 85,
+    "content_velocity": 70,
+    "social_buzz": 65
+  },
+  "executiveSummary": "Sleep Number faces potential bankruptcy with going concern warnings, creating immediate market opportunity. Mattress Firm continues dominant search performance with class action lawsuit risks, while Purple maintains steady positioning.",
+  "topDevelopments": [
+    {
+      "type": "alert",
+      "competitor": "Sleep Number",
+      "headline": "Sleep Number issues bankruptcy warning",
+      "detail": "Sleep Number filed going concern warnings stating bankruptcy is possible, with sales sliding 16% while launching new product lines. Multiple news outlets covered the financial distress extensively.",
+      "recommended_action": "Target Sleep Number customers immediately with retention messaging and competitive trade-in offers",
+      "urgency": "immediate"
+    },
+    {
+      "type": "watch",
+      "competitor": "Mattress Firm",
+      "headline": "Class action lawsuits over fake sales",
+      "detail": "Multiple class action suits filed alleging fake limited-time sales practices. Despite legal issues, Mattress Firm maintains search dominance with 21.88% traffic share on brand terms.",
+      "recommended_action": "Monitor legal outcomes and prepare messaging highlighting transparent pricing practices",
+      "urgency": "this_week"
+    },
+    {
+      "type": "opportunity",
+      "competitor": "Sleep Number",
+      "headline": "Travis Kelce partnership during crisis",
+      "detail": "Sleep Number announced Travis Kelce as strategic partner while issuing bankruptcy warnings, suggesting misaligned marketing priorities during financial crisis.",
+      "recommended_action": "Position against celebrity endorsement spending during customer service/financial issues",
+      "urgency": "this_week"
+    },
+    {
+      "type": "watch",
+      "competitor": "Purple",
+      "headline": "Product line refresh maintains stability",
+      "detail": "Purple introduced new mattresses and launched new bed frame collections while maintaining stable search presence and consistent messaging.",
+      "recommended_action": "Analyze Purple's new product positioning for differentiation opportunities",
+      "urgency": "this_month"
+    }
+  ],
+  "keywordMovements": [
+    {
+      "competitor": "Mattress Firm",
+      "keyword": "mattress firm",
+      "position_change": 0,
+      "current_position": 1,
+      "overlap_with_client": true,
+      "monthly_volume": 550000
+    },
+    {
+      "competitor": "Mattress Firm",
+      "keyword": "mattress stores",
+      "position_change": 1,
+      "current_position": 2,
+      "overlap_with_client": true,
+      "monthly_volume": 33100
+    },
+    {
+      "competitor": "Sleep Number",
+      "keyword": "sleep number",
+      "position_change": 0,
+      "current_position": 1,
+      "overlap_with_client": false,
+      "monthly_volume": 135000
+    },
+    {
+      "competitor": "Purple",
+      "keyword": "purple mattress",
+      "position_change": 0,
+      "current_position": 1,
+      "overlap_with_client": true,
+      "monthly_volume": 201000
+    },
+    {
+      "competitor": "Sleep Number",
+      "keyword": "queen mattress dimensions",
+      "position_change": 4,
+      "current_position": 6,
+      "overlap_with_client": true,
+      "monthly_volume": 40500
+    }
+  ],
+  "contentSignals": [
+    {
+      "competitor": "Sleep Number",
+      "signal": "Redesigned mattress portfolio with five new beds",
+      "implication": "Attempting product innovation during financial crisis suggests desperation rather than strength"
+    },
+    {
+      "competitor": "Mattress Firm",
+      "signal": "AI-powered store associate efficiency tools",
+      "implication": "Investing in operational technology to maintain scale advantages and reduce costs"
+    },
+    {
+      "competitor": "Purple",
+      "signal": "Launched new bed frame collections",
+      "implication": "Expanding beyond mattresses into complete sleep solutions ecosystem"
+    }
+  ],
+  "redditIntelligence": [
+    {
+      "competitor": "No data",
+      "theme": "No Reddit signals captured",
+      "sentiment": "neutral",
+      "top_post_title": "No posts available",
+      "engagement_level": "low",
+      "strategic_note": "Need to implement Reddit monitoring for customer sentiment tracking"
+    }
+  ],
+  "weekOverWeek": {
+    "pressure_score_delta": 15,
+    "notable_changes": [
+      "Sleep Number bankruptcy risk creates major market disruption opportunity",
+      "Mattress Firm legal challenges while maintaining search dominance",
+      "Purple stability contrasts with competitor volatility"
+    ]
+  },
+  "pressureHistory": [
+    {
+      "date": "2026-03-18",
+      "score": 78
+    }
+  ]
+};
+        // SCOUT_DATA_END
 
 // ── DATA RENDERING ────────────────────────────────────────────────────────────
 function applyScoutData(data) {
