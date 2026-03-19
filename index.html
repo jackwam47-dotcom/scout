@@ -538,15 +538,19 @@ function renderAllSignals(data) {
     const sv = devSvg[d.type]||devSvg.news;
     items.push(`<div class="signal"><div class="sicon ${ic}">${sv}</div><div><div class="scomp">${d.competitor} · ${d.type}</div><div class="stitle">${d.headline}</div><div class="sinterp">${d.detail}</div></div><div class="stime">${d.urgency||'this week'}</div></div>`);
   });
-  // News mentions
+  // News mentions — only show if title contains competitor name (filtered by Edge Function)
   const newsSvg = devSvg.news;
   (data.newsMentions||[]).slice(0,5).forEach(n=>{
-    items.push(`<div class="signal"><div class="sicon news">${newsSvg}</div><div><div class="scomp">${n.competitor||''} · News · ${n.source||''}</div><div class="stitle">${n.title||''}</div><div class="sinterp">${(n.summary||'').slice(0,150)}</div></div><div class="stime">${n.published ? new Date(n.published).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''}</div></div>`);
+    const pub = n.published ? new Date(n.published).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+    const source = n.source ? ' · '+n.source : '';
+    items.push(`<div class="signal"><div class="sicon news">${newsSvg}</div><div><div class="scomp">${n.competitor||''}${source}</div><div class="stitle">${(n.title||'').slice(0,120)}</div><div class="sinterp">${(n.summary||'').replace(/<[^>]*>/g,'').slice(0,180)}</div></div><div class="stime">${pub}</div></div>`);
   });
   // Web changes
   const webSvg = '<svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 5.5h13" stroke="currentColor" stroke-width="1.3"/></svg>';
   (data.webChanges||[]).slice(0,5).forEach(w=>{
-    items.push(`<div class="signal"><div class="sicon web">${webSvg}</div><div><div class="scomp">${w.competitor} · Web Change</div><div class="stitle">${w.data?.url||'Page updated'}</div><div class="sinterp">Significance score: ${w.data?.significance_score||0} · ${w.data?.change_count||0} changes detected</div></div><div class="stime">${w.collected_at ? new Date(w.collected_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''}</div></div>`);
+    const changed = (w.changes||[]).filter((c)=>c.significance==='high').map((c)=>c.field).join(', ') || 'Page content updated';
+    const date = w.collected_at ? new Date(w.collected_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+    items.push(`<div class="signal"><div class="sicon web">${webSvg}</div><div><div class="scomp">${w.competitor} · Web Change · Score ${w.significance_score||0}</div><div class="stitle">${w.url||'Page updated'}</div><div class="sinterp">${changed}</div></div><div class="stime">${date}</div></div>`);
   });
   if (items.length > 0) feed.innerHTML = items.join('');
 }
