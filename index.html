@@ -7,135 +7,172 @@
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Merriweather:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  :root {
-    --cadet:#233D4D;--current:#3C6E71;--linen:#F6EDE6;--coral:#E1885E;--mustard:#DCBE4C;
-    --bubble:#8CBEC6;--jet:#333333;--spring:#C6EB4C;--nectar:#F0C3AE;--sand:#D0A684;--dove:#666666;
-    --bg:#1d3341;--surface:#243f50;--surface2:#192c3a;
-    --border:rgba(246,237,230,0.08);--border2:rgba(246,237,230,0.14);
-    --text:#F6EDE6;--muted:#8fb0b5;
-    --font-head:'Open Sans',sans-serif;--font-body:'Merriweather',serif;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:13px;min-height:100vh;overflow-x:hidden;}
-  .shell{display:grid;grid-template-columns:228px 1fr;min-height:100vh;}
-  .sidebar{background:var(--surface2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
-  .logo-wrap{padding:26px 22px 20px;border-bottom:1px solid var(--border);}
-  .logo{display:flex;align-items:center;gap:10px;margin-bottom:3px;}
-  .logo-icon{width:30px;height:30px;background:var(--current);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-  .logo-icon svg{width:16px;height:16px;}
-  .logo-name{font-family:var(--font-head);font-size:21px;font-weight:700;color:var(--linen);letter-spacing:-0.3px;}
-  .logo-by{font-family:var(--font-head);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted);padding-left:40px;}
-  .client-badge{margin:14px 14px 6px;background:var(--current);border-radius:8px;padding:12px 16px;}
-  .client-badge-label{font-family:var(--font-head);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:rgba(246,237,230,0.6);margin-bottom:4px;}
-  .client-badge-name{font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--linen);}
-  .nav-section{padding:16px 20px 5px;font-family:var(--font-head);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted);}
-  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--muted);cursor:pointer;transition:all 0.15s;font-family:var(--font-head);font-size:13px;font-weight:400;border-left:3px solid transparent;margin:1px 0;user-select:none;}
-  .nav-item:hover{color:var(--linen);background:rgba(246,237,230,0.04);}
-  .nav-item.active{color:var(--linen);border-left-color:var(--mustard);background:rgba(220,190,76,0.07);font-weight:600;}
-  .nav-item svg{width:15px;height:15px;flex-shrink:0;}
-  .sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border);}
-  .week-badge{font-family:var(--font-head);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:flex;align-items:center;gap:8px;}
-  .week-dot{width:7px;height:7px;border-radius:50%;background:var(--spring);flex-shrink:0;animation:pulse 2.5s infinite;}
-  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.35;transform:scale(0.8)}}
-  .main{overflow-y:auto;}
-  .topbar{display:flex;align-items:center;justify-content:space-between;padding:17px 30px;border-bottom:1px solid var(--border);background:rgba(29,51,65,0.95);backdrop-filter:blur(10px);position:sticky;top:0;z-index:100;}
-  .topbar-title{font-family:var(--font-head);font-size:13px;font-weight:600;color:var(--linen);}
-  .topbar-right{display:flex;align-items:center;gap:10px;}
-  .date-chip{font-family:var(--font-head);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);background:var(--surface2);border:1px solid var(--border2);padding:5px 12px;border-radius:20px;}
-  .live-chip{font-family:var(--font-head);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--spring);background:rgba(198,235,76,0.1);border:1px solid rgba(198,235,76,0.25);padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:6px;}
-  .live-dot{width:6px;height:6px;border-radius:50%;background:var(--spring);animation:pulse 2s infinite;}
-  .export-btn{font-family:var(--font-head);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;background:var(--current);color:var(--linen);border:none;padding:7px 18px;border-radius:20px;cursor:pointer;transition:background 0.15s;}
-  .export-btn:hover{background:#4a8588;}
-  .page{display:none;}.page.active{display:block;}
-  .page-content{padding:30px;animation:fadeUp 0.2s ease both;}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-  .page-header{margin-bottom:26px;}
-  .page-eyebrow{font-family:var(--font-head);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.16em;color:var(--bubble);margin-bottom:5px;}
-  .page-header-title{font-family:var(--font-head);font-size:26px;font-weight:300;color:var(--linen);margin-bottom:5px;line-height:1.2;}
-  .page-header-sub{font-family:var(--font-body);font-size:12px;color:var(--muted);line-height:1.6;}
-  .pressure-hero{background:var(--current);border-radius:14px;padding:30px;display:grid;grid-template-columns:170px 1fr;gap:32px;align-items:center;margin-bottom:22px;position:relative;overflow:hidden;}
-  .pressure-hero::after{content:'';position:absolute;bottom:-50px;right:-50px;width:220px;height:220px;border-radius:50%;background:rgba(246,237,230,0.04);pointer-events:none;}
-  .pressure-score-wrap{text-align:center;}
-  .pressure-eyebrow{font-family:var(--font-head);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:rgba(246,237,230,0.55);margin-bottom:5px;}
-  .pressure-score{font-family:var(--font-head);font-size:96px;font-weight:700;line-height:1;letter-spacing:-4px;color:var(--mustard);}
-  .pressure-delta{font-family:var(--font-head);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--coral);margin-top:6px;}
-  .pressure-title{font-family:var(--font-head);font-size:19px;font-weight:300;color:var(--linen);margin-bottom:8px;line-height:1.35;}
-  .pressure-desc{font-family:var(--font-body);font-size:12px;color:rgba(246,237,230,0.72);line-height:1.7;margin-bottom:18px;}
-  .pressure-breakdown{display:flex;gap:10px;flex-wrap:wrap;}
-  .breakdown-item{background:rgba(246,237,230,0.1);border-radius:8px;padding:9px 14px;text-align:center;}
-  .breakdown-item-label{font-family:var(--font-head);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:rgba(246,237,230,0.55);margin-bottom:3px;}
-  .breakdown-item-val{font-family:var(--font-head);font-size:20px;font-weight:700;color:var(--linen);}
-  .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
-  .metric-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
-  .metric-card-label{font-family:var(--font-head);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:9px;}
-  .metric-card-val{font-family:var(--font-head);font-size:30px;font-weight:700;letter-spacing:-0.5px;color:var(--linen);margin-bottom:5px;}
-  .metric-card-delta{font-family:var(--font-head);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;}
-  .delta-up{color:var(--coral);}.delta-down{color:var(--spring);}.delta-neutral{color:var(--muted);}
-  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:22px;}
-  .chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:16px;}
-  .chart-eyebrow{font-family:var(--font-head);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--bubble);margin-bottom:3px;}
-  .chart-title{font-family:var(--font-head);font-size:15px;font-weight:600;color:var(--linen);margin-bottom:3px;}
-  .chart-subtitle{font-family:var(--font-body);font-size:11px;color:var(--muted);}
-  .chart-legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
-  .legend-item{display:flex;align-items:center;gap:6px;font-family:var(--font-head);font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
-  .legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
-  .chart-wrap{position:relative;height:210px;}.chart-wrap.tall{height:270px;}
-  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px;}
-  .section-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;}
-  .section-title{font-family:var(--font-head);font-size:15px;font-weight:600;color:var(--linen);}
-  .section-meta{font-family:var(--font-head);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);}
-  .highlights{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
-  .highlight-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;border-top:4px solid;}
-  .highlight-card.alert{border-top-color:var(--coral);}.highlight-card.watch{border-top-color:var(--mustard);}.highlight-card.opportunity{border-top-color:var(--spring);}
-  .highlight-type{font-family:var(--font-head);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;margin-bottom:8px;}
-  .highlight-card.alert .highlight-type{color:var(--coral);}.highlight-card.watch .highlight-type{color:var(--mustard);}.highlight-card.opportunity .highlight-type{color:var(--spring);}
-  .highlight-title{font-family:var(--font-head);font-size:14px;font-weight:600;color:var(--linen);margin-bottom:10px;line-height:1.35;}
-  .highlight-body{font-family:var(--font-body);font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px;}
-  .highlight-action{font-family:var(--font-body);font-size:12px;color:var(--linen);background:rgba(198,235,76,0.07);border:1px solid rgba(198,235,76,0.18);border-left:3px solid var(--spring);border-radius:6px;padding:10px 13px;line-height:1.55;}
-  .signals-feed{display:flex;flex-direction:column;}
-  .signal-item{display:grid;grid-template-columns:40px 1fr auto;gap:14px;align-items:start;padding:16px 0;border-bottom:1px solid var(--border);}
-  .signal-item:last-child{border-bottom:none;}
-  .signal-icon-wrap{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-  .signal-icon-wrap.organic{background:rgba(60,110,113,0.2);color:var(--bubble);}
-  .signal-icon-wrap.paid{background:rgba(225,136,94,0.15);color:var(--coral);}
-  .signal-icon-wrap.social{background:rgba(220,190,76,0.15);color:var(--mustard);}
-  .signal-icon-wrap.news{background:rgba(198,235,76,0.1);color:var(--spring);}
-  .signal-icon-wrap.web{background:rgba(240,195,174,0.12);color:var(--nectar);}
-  .signal-icon-wrap.alert-icon{background:rgba(225,136,94,0.18);color:var(--coral);}
-  .signal-icon-wrap svg{width:15px;height:15px;}
-  .signal-competitor{font-family:var(--font-head);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:3px;}
-  .signal-title{font-family:var(--font-head);font-size:13px;font-weight:600;color:var(--linen);margin-bottom:5px;line-height:1.4;}
-  .signal-interp{font-family:var(--font-body);font-size:12px;color:var(--muted);line-height:1.65;font-style:italic;}
-  .signal-time{font-family:var(--font-head);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--dove);white-space:nowrap;padding-top:2px;}
-  .data-table{width:100%;border-collapse:collapse;}
-  .data-table th{font-family:var(--font-head);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);text-align:left;padding:0 0 11px;border-bottom:1px solid var(--border);}
-  .data-table td{padding:12px 0;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
-  .data-table tr:last-child td{border-bottom:none;}
-  .kw{font-family:var(--font-head);font-size:13px;font-weight:600;color:var(--linen);}
-  .comp-label{font-family:var(--font-head);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);}
-  .pos-badge{display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-head);font-size:11px;font-weight:700;padding:3px 9px;border-radius:4px;min-width:34px;}
-  .pos-badge.good{background:rgba(60,110,113,0.22);color:var(--bubble);}
-  .pos-badge.mid{background:rgba(220,190,76,0.15);color:var(--mustard);}
-  .chg{font-family:var(--font-head);font-size:11px;font-weight:700;}
-  .chg.up{color:var(--coral);}.chg.flat{color:var(--muted);}
-  .comp-pills{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
-  .comp-pill{font-family:var(--font-head);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;padding:5px 14px;border-radius:20px;border:1px solid var(--border2);cursor:pointer;color:var(--muted);transition:all 0.15s;display:flex;align-items:center;gap:7px;user-select:none;}
-  .comp-pill:hover{border-color:var(--bubble);color:var(--linen);}
-  .comp-pill.active{background:rgba(60,110,113,0.18);border-color:var(--current);color:var(--linen);}
-  .comp-pill-dot{width:6px;height:6px;border-radius:50%;}
-  .content-signal-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:17px;margin-bottom:12px;}
-  .content-signal-comp{font-family:var(--font-head);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px;}
-  .content-signal-title{font-family:var(--font-head);font-size:14px;font-weight:600;color:var(--linen);margin-bottom:8px;}
-  .content-signal-impl{font-family:var(--font-body);font-size:12px;color:var(--mustard);line-height:1.6;font-style:italic;}
-  .trend-insight{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--bubble);border-radius:10px;padding:16px;margin-bottom:12px;}
-  .trend-insight-label{font-family:var(--font-head);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--bubble);margin-bottom:6px;}
-  .trend-insight-text{font-family:var(--font-body);font-size:12px;color:var(--muted);line-height:1.65;}
-  .divider{height:1px;background:var(--border);margin:22px 0;}
-  ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(246,237,230,0.1);border-radius:4px;}
+:root {
+  --current:#3C6E71;--linen:#F6EDE6;--coral:#E1885E;--mustard:#DCBE4C;
+  --bubble:#8CBEC6;--spring:#C6EB4C;--nectar:#F0C3AE;--dove:#666666;
+  --bg:#1d3341;--surface:#243f50;--surface2:#192c3a;
+  --border:rgba(246,237,230,0.08);--border2:rgba(246,237,230,0.14);
+  --text:#F6EDE6;--muted:#8fb0b5;
+  --fh:'Open Sans',sans-serif;--fb:'Merriweather',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);font-size:13px;min-height:100vh;overflow-x:hidden;}
+.shell{display:grid;grid-template-columns:228px 1fr;min-height:100vh;}
+
+/* SIDEBAR */
+.sidebar{background:var(--surface2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.logo-wrap{padding:26px 22px 20px;border-bottom:1px solid var(--border);}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:3px;}
+.logo-icon{width:30px;height:30px;background:var(--current);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-icon svg{width:16px;height:16px;}
+.logo-name{font-family:var(--fh);font-size:21px;font-weight:700;color:var(--linen);letter-spacing:-0.3px;}
+.logo-by{font-family:var(--fh);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted);padding-left:40px;}
+.client-badge{margin:14px 14px 6px;background:var(--current);border-radius:8px;padding:12px 16px;}
+.client-badge-label{font-family:var(--fh);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:rgba(246,237,230,0.6);margin-bottom:4px;}
+.client-badge-name{font-family:var(--fh);font-size:14px;font-weight:700;color:var(--linen);}
+.nav-section{padding:16px 20px 5px;font-family:var(--fh);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted);}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--muted);cursor:pointer;transition:all 0.15s;font-family:var(--fh);font-size:13px;font-weight:400;border-left:3px solid transparent;margin:1px 0;user-select:none;}
+.nav-item:hover{color:var(--linen);background:rgba(246,237,230,0.04);}
+.nav-item.active{color:var(--linen);border-left-color:var(--mustard);background:rgba(220,190,76,0.07);font-weight:600;}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;}
+.sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border);}
+.week-badge{font-family:var(--fh);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:flex;align-items:center;gap:8px;}
+.week-dot{width:7px;height:7px;border-radius:50%;background:var(--spring);flex-shrink:0;animation:pulse 2.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.35;transform:scale(0.8)}}
+
+/* MAIN */
+.main{overflow-y:auto;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:17px 30px;border-bottom:1px solid var(--border);background:rgba(29,51,65,0.95);backdrop-filter:blur(10px);position:sticky;top:0;z-index:100;}
+.topbar-title{font-family:var(--fh);font-size:13px;font-weight:600;color:var(--linen);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.date-chip{font-family:var(--fh);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);background:var(--surface2);border:1px solid var(--border2);padding:5px 12px;border-radius:20px;}
+.live-chip{font-family:var(--fh);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--spring);background:rgba(198,235,76,0.1);border:1px solid rgba(198,235,76,0.25);padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:6px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--spring);animation:pulse 2s infinite;}
+.export-btn{font-family:var(--fh);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;background:var(--current);color:var(--linen);border:none;padding:7px 18px;border-radius:20px;cursor:pointer;}
+
+/* PAGES */
+.page{display:none;}.page.active{display:block;}
+.pc{padding:30px;animation:fadeUp 0.2s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* SHARED COMPONENTS */
+.eyebrow{font-family:var(--fh);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.16em;color:var(--bubble);margin-bottom:5px;}
+.page-title{font-family:var(--fh);font-size:26px;font-weight:300;color:var(--linen);margin-bottom:5px;line-height:1.2;}
+.page-sub{font-family:var(--fb);font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:26px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:22px;}
+.card2{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:17px;}
+.card-eyebrow{font-family:var(--fh);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:var(--bubble);margin-bottom:3px;}
+.card-title{font-family:var(--fh);font-size:15px;font-weight:600;color:var(--linen);margin-bottom:3px;}
+.card-sub{font-family:var(--fb);font-size:11px;color:var(--muted);}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:16px;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.legend-item{display:flex;align-items:center;gap:6px;font-family:var(--fh);font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;}
+.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.chart-h{height:210px;position:relative;}
+.chart-h.tall{height:270px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px;}
+.sec-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;}
+.sec-title{font-family:var(--fh);font-size:15px;font-weight:600;color:var(--linen);}
+.sec-meta{font-family:var(--fh);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);}
+.divider{height:1px;background:var(--border);margin:22px 0;}
+
+/* PRESSURE HERO */
+.hero{background:var(--current);border-radius:14px;padding:30px;display:grid;grid-template-columns:170px 1fr;gap:32px;align-items:center;margin-bottom:22px;position:relative;overflow:hidden;}
+.hero::after{content:'';position:absolute;bottom:-50px;right:-50px;width:220px;height:220px;border-radius:50%;background:rgba(246,237,230,0.04);pointer-events:none;}
+.hero-score-wrap{text-align:center;}
+.hero-eyebrow{font-family:var(--fh);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;color:rgba(246,237,230,0.55);margin-bottom:5px;}
+.hero-score{font-family:var(--fh);font-size:96px;font-weight:700;line-height:1;letter-spacing:-4px;color:var(--mustard);}
+.hero-delta{font-family:var(--fh);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--coral);margin-top:6px;}
+.hero-title{font-family:var(--fh);font-size:19px;font-weight:300;color:var(--linen);margin-bottom:8px;line-height:1.35;}
+.hero-desc{font-family:var(--fb);font-size:12px;color:rgba(246,237,230,0.72);line-height:1.7;margin-bottom:18px;}
+.breakdown{display:flex;gap:10px;flex-wrap:wrap;}
+.bitem{background:rgba(246,237,230,0.1);border-radius:8px;padding:9px 14px;text-align:center;}
+.bitem-label{font-family:var(--fh);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:rgba(246,237,230,0.55);margin-bottom:3px;}
+.bitem-val{font-family:var(--fh);font-size:20px;font-weight:700;color:var(--linen);}
+
+/* METRICS */
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.metric-label{font-family:var(--fh);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:9px;}
+.metric-val{font-family:var(--fh);font-size:30px;font-weight:700;letter-spacing:-0.5px;color:var(--linen);margin-bottom:5px;}
+.metric-delta{font-family:var(--fh);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;}
+.up{color:var(--coral);}.dn{color:var(--spring);}.neu{color:var(--muted);}
+
+/* HIGHLIGHTS */
+.highlights{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
+.hl{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;border-top:4px solid;}
+.hl.alert{border-top-color:var(--coral);}
+.hl.watch{border-top-color:var(--mustard);}
+.hl.opp{border-top-color:var(--spring);}
+.hl-type{font-family:var(--fh);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.14em;margin-bottom:8px;}
+.hl.alert .hl-type{color:var(--coral);}.hl.watch .hl-type{color:var(--mustard);}.hl.opp .hl-type{color:var(--spring);}
+.hl-title{font-family:var(--fh);font-size:14px;font-weight:600;color:var(--linen);margin-bottom:10px;line-height:1.35;}
+.hl-body{font-family:var(--fb);font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px;}
+.hl-action{font-family:var(--fb);font-size:12px;color:var(--linen);background:rgba(198,235,76,0.07);border:1px solid rgba(198,235,76,0.18);border-left:3px solid var(--spring);border-radius:6px;padding:10px 13px;line-height:1.55;}
+
+/* SIGNALS FEED */
+.signals-feed{display:flex;flex-direction:column;}
+.signal{display:grid;grid-template-columns:40px 1fr auto;gap:14px;align-items:start;padding:16px 0;border-bottom:1px solid var(--border);}
+.signal:last-child{border-bottom:none;}
+.sicon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sicon svg{width:15px;height:15px;}
+.sicon.organic{background:rgba(60,110,113,0.2);color:var(--bubble);}
+.sicon.paid{background:rgba(225,136,94,0.15);color:var(--coral);}
+.sicon.social{background:rgba(220,190,76,0.15);color:var(--mustard);}
+.sicon.news{background:rgba(198,235,76,0.1);color:var(--spring);}
+.sicon.web{background:rgba(240,195,174,0.12);color:var(--nectar);}
+.sicon.alert-icon{background:rgba(225,136,94,0.18);color:var(--coral);}
+.scomp{font-family:var(--fh);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin-bottom:3px;}
+.stitle{font-family:var(--fh);font-size:13px;font-weight:600;color:var(--linen);margin-bottom:5px;line-height:1.4;}
+.sinterp{font-family:var(--fb);font-size:12px;color:var(--muted);line-height:1.65;font-style:italic;}
+.stime{font-family:var(--fh);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--dove);white-space:nowrap;padding-top:2px;}
+
+/* TABLE */
+.data-table{width:100%;border-collapse:collapse;}
+.data-table th{font-family:var(--fh);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);text-align:left;padding:0 0 11px;border-bottom:1px solid var(--border);}
+.data-table td{padding:12px 0;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+.data-table tr:last-child td{border-bottom:none;}
+.kw{font-family:var(--fh);font-size:13px;font-weight:600;color:var(--linen);}
+.comp-tag{font-family:var(--fh);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);}
+.badge{display:inline-flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:11px;font-weight:700;padding:3px 9px;border-radius:4px;min-width:34px;}
+.badge.good{background:rgba(60,110,113,0.22);color:var(--bubble);}
+.badge.mid{background:rgba(220,190,76,0.15);color:var(--mustard);}
+.chg{font-family:var(--fh);font-size:11px;font-weight:700;}
+.chg.up{color:var(--coral);}.chg.flat{color:var(--muted);}
+
+/* AD CARDS */
+.ad-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.ad-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:17px;}
+.ad-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+.ad-comp{font-family:var(--fh);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);}
+.ad-tag{font-family:var(--fh);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:3px 9px;border-radius:20px;background:rgba(225,136,94,0.14);color:var(--coral);}
+.ad-headline{font-family:var(--fh);font-size:14px;font-weight:700;color:var(--bubble);margin-bottom:5px;line-height:1.3;}
+.ad-desc{font-family:var(--fb);font-size:12px;color:var(--muted);line-height:1.6;}
+.ad-url{font-family:var(--fh);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--spring);margin-top:9px;display:block;}
+
+/* CONTENT SIGNALS */
+.csig{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:17px;margin-bottom:12px;}
+.csig-comp{font-family:var(--fh);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px;}
+.csig-title{font-family:var(--fh);font-size:14px;font-weight:600;color:var(--linen);margin-bottom:8px;}
+.csig-impl{font-family:var(--fb);font-size:12px;color:var(--mustard);line-height:1.6;font-style:italic;}
+
+/* TREND INSIGHTS */
+.tinsight{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--bubble);border-radius:10px;padding:16px;margin-bottom:12px;}
+.tinsight-label{font-family:var(--fh);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--bubble);margin-bottom:6px;}
+.tinsight-text{font-family:var(--fb);font-size:12px;color:var(--muted);line-height:1.65;}
+
+/* COMP PILLS */
+.pills{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.pill{font-family:var(--fh);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;padding:5px 14px;border-radius:20px;border:1px solid var(--border2);cursor:pointer;color:var(--muted);transition:all 0.15s;display:flex;align-items:center;gap:7px;user-select:none;}
+.pill.active{background:rgba(60,110,113,0.18);border-color:var(--current);color:var(--linen);}
+.pill-dot{width:6px;height:6px;border-radius:50%;}
+
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(246,237,230,0.1);border-radius:4px;}
 </style>
 </head>
 <body>
 <div class="shell">
+
 <nav class="sidebar">
   <div class="logo-wrap">
     <div class="logo">
@@ -161,7 +198,7 @@
     <svg viewBox="0 0 15 15" fill="none"><rect x="1" y="3" width="13" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 7.5h5M7.5 5.5v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
     Paid Search
   </div>
-  <div class="nav-item" onclick="showPage('content',this)">
+  <div class="nav-item" onclick="showPage('contentweb',this)">
     <svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 6h7M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
     Content & Web
   </div>
@@ -190,469 +227,295 @@
 
   <!-- OVERVIEW -->
   <div id="page-overview" class="page active">
-    <div class="page-content">
-      <div class="pressure-hero">
-        <div class="pressure-score-wrap">
-          <div class="pressure-eyebrow">Competitive Pressure Score</div>
-          <div class="pressure-score" id="hero-score">78</div>
-          <div class="pressure-delta" id="hero-delta">↑ +15 from last week</div>
+    <div class="pc">
+      <div class="hero">
+        <div class="hero-score-wrap">
+          <div class="hero-eyebrow">Competitive Pressure Score</div>
+          <div class="hero-score" id="hero-score">78</div>
+          <div class="hero-delta" id="hero-delta">↑ +15 from last week</div>
         </div>
         <div>
-          <div class="pressure-title">Sleep Number's financial crisis creates a rare market opportunity this week</div>
-          <div class="pressure-desc" id="hero-desc">Sleep Number filed going concern warnings with bankruptcy risk while sales slid 16%. Mattress Firm maintains search dominance but faces class action lawsuits over fake sales practices. This is the highest disruption signal in the category in months — immediate action warranted.</div>
-          <div class="pressure-breakdown">
-            <div class="breakdown-item"><div class="breakdown-item-label">Organic</div><div class="breakdown-item-val" style="color:var(--coral)" id="score-organic">75</div></div>
-            <div class="breakdown-item"><div class="breakdown-item-label">Paid</div><div class="breakdown-item-val" style="color:var(--mustard)" id="score-paid">85</div></div>
-            <div class="breakdown-item"><div class="breakdown-item-label">Content</div><div class="breakdown-item-val" style="color:var(--bubble)" id="score-content">70</div></div>
-            <div class="breakdown-item"><div class="breakdown-item-label">Social</div><div class="breakdown-item-val" style="color:var(--spring)" id="score-social">65</div></div>
+          <div class="hero-title">Sleep Number's financial crisis creates a rare market opportunity this week</div>
+          <div class="hero-desc" id="hero-desc">Sleep Number filed going concern warnings with bankruptcy risk while sales slid 16%. Mattress Firm maintains search dominance but faces class action lawsuits over fake sales practices.</div>
+          <div class="breakdown">
+            <div class="bitem"><div class="bitem-label">Organic</div><div class="bitem-val" style="color:var(--coral)" id="score-organic">75</div></div>
+            <div class="bitem"><div class="bitem-label">Paid</div><div class="bitem-val" style="color:var(--mustard)" id="score-paid">85</div></div>
+            <div class="bitem"><div class="bitem-label">Content</div><div class="bitem-val" style="color:var(--bubble)" id="score-content">70</div></div>
+            <div class="bitem"><div class="bitem-label">Social</div><div class="bitem-val" style="color:var(--spring)" id="score-social">65</div></div>
           </div>
         </div>
       </div>
-
       <div class="metric-grid">
-        <div class="metric-card"><div class="metric-card-label">Competitor Web Changes</div><div class="metric-card-val">23</div><div class="metric-card-delta delta-up">↑ Detected this week</div></div>
-        <div class="metric-card"><div class="metric-card-label">High-Volume Keyword Overlaps</div><div class="metric-card-val">5</div><div class="metric-card-delta delta-neutral">→ Tracked targets</div></div>
-        <div class="metric-card"><div class="metric-card-label">News Mentions (competitors)</div><div class="metric-card-val">12</div><div class="metric-card-delta delta-up">↑ Sleep Number spike</div></div>
-        <div class="metric-card"><div class="metric-card-label">Pressure Score Delta</div><div class="metric-card-val">+15</div><div class="metric-card-delta delta-up">↑ Elevated vs last week</div></div>
+        <div class="metric"><div class="metric-label">Competitor Web Changes</div><div class="metric-val">23</div><div class="metric-delta up">↑ Detected this week</div></div>
+        <div class="metric"><div class="metric-label">High-Volume Keyword Overlaps</div><div class="metric-val">5</div><div class="metric-delta neu">→ Tracked targets</div></div>
+        <div class="metric"><div class="metric-label">News Mentions (competitors)</div><div class="metric-val">12</div><div class="metric-delta up">↑ Sleep Number spike</div></div>
+        <div class="metric"><div class="metric-label">Pressure Score Delta</div><div class="metric-val">+15</div><div class="metric-delta up">↑ Elevated vs last week</div></div>
       </div>
-
-      <div class="section-header">
-        <div class="section-title">Top Developments This Week</div>
-        <div class="section-meta">Live data · AI-synthesized · Mar 18, 2026</div>
+      <div class="sec-header">
+        <div class="sec-title">Top Developments This Week</div>
+        <div class="sec-meta">Live data · AI-synthesized · Mar 18, 2026</div>
       </div>
-
       <div class="highlights" id="developments-grid">
-        <div class="highlight-card alert">
-          <div class="highlight-type">🔴 Alert — Immediate</div>
-          <div class="highlight-title">Sleep Number files bankruptcy going concern warning</div>
-          <div class="highlight-body">Sleep Number filed going concern warnings stating bankruptcy is possible, with sales sliding 16% while launching new product lines. Multiple news outlets covered the financial distress extensively this week.</div>
-          <div class="highlight-action">Target Sleep Number customers immediately with trade-in offers and competitive messaging. This window won't stay open long.</div>
+        <div class="hl alert">
+          <div class="hl-type">🔴 Alert — Immediate</div>
+          <div class="hl-title">Sleep Number files bankruptcy going concern warning</div>
+          <div class="hl-body">Sleep Number filed going concern warnings stating bankruptcy is possible, with sales sliding 16% while launching new product lines.</div>
+          <div class="hl-action">Target Sleep Number customers immediately with trade-in offers and competitive messaging. This window won't stay open long.</div>
         </div>
-        <div class="highlight-card watch">
-          <div class="highlight-type">🟡 Watch — This Week</div>
-          <div class="highlight-title">Mattress Firm hit with class action suits over fake sales</div>
-          <div class="highlight-body">Multiple class action suits allege fake limited-time sales practices. Despite legal issues, Mattress Firm maintains 21.88% organic traffic share and continues investing in AI store tools.</div>
-          <div class="highlight-action">Prepare messaging highlighting Mattress Warehouse's transparent pricing as a direct contrast to Mattress Firm's legal exposure.</div>
+        <div class="hl watch">
+          <div class="hl-type">🟡 Watch — This Week</div>
+          <div class="hl-title">Mattress Firm hit with class action suits over fake sales</div>
+          <div class="hl-body">Multiple class action suits allege fake limited-time sales practices. Despite legal issues, Mattress Firm maintains 21.88% organic traffic share.</div>
+          <div class="hl-action">Prepare messaging highlighting Mattress Warehouse's transparent pricing as a direct contrast to Mattress Firm's legal exposure.</div>
         </div>
-        <div class="highlight-card opportunity">
-          <div class="highlight-type">🟢 Opportunity — This Week</div>
-          <div class="highlight-title">Sleep Number signs Travis Kelce during bankruptcy crisis</div>
-          <div class="highlight-body">Sleep Number announced Travis Kelce as strategic partner while issuing bankruptcy warnings — a significant misalignment of priorities during a financial and customer service crisis.</div>
-          <div class="highlight-action">Position against celebrity endorsement spend during quality issues. Amplify Mattress Warehouse's local, customer-first brand story.</div>
+        <div class="hl opp">
+          <div class="hl-type">🟢 Opportunity — This Week</div>
+          <div class="hl-title">Sleep Number signs Travis Kelce during bankruptcy crisis</div>
+          <div class="hl-body">Sleep Number announced Travis Kelce as strategic partner while issuing bankruptcy warnings — a significant misalignment of priorities.</div>
+          <div class="hl-action">Position against celebrity endorsement spend during quality issues. Amplify Mattress Warehouse's local, customer-first story.</div>
         </div>
       </div>
-
-      <div class="chart-card">
-        <div class="chart-header">
+      <div class="card">
+        <div class="card-header">
           <div>
-            <div class="chart-eyebrow">Pressure Trend</div>
-            <div class="chart-title">Competitive Pressure Score — 8 Weeks</div>
-            <div class="chart-subtitle">Weekly composite · real data from Mar 18 onward · prior weeks estimated</div>
+            <div class="card-eyebrow">Pressure Trend</div>
+            <div class="card-title">Competitive Pressure Score — 8 Weeks</div>
+            <div class="card-sub">Weekly composite · real data from Mar 18 onward · prior weeks estimated</div>
           </div>
         </div>
-        <div class="chart-wrap"><canvas id="pressureChart"></canvas></div>
+        <div class="chart-h"><canvas id="pressureChart"></canvas></div>
       </div>
     </div>
   </div>
 
   <!-- ORGANIC -->
   <div id="page-organic" class="page">
-    <div class="page-content">
-      <div class="page-header">
-        <div class="page-eyebrow">Intelligence</div>
-        <div class="page-header-title">Organic Search</div>
-        <div class="page-header-sub">Keyword movements and search presence across Mattress Firm, Sleep Number, Purple, and Casper</div>
+    <div class="pc">
+      <div class="eyebrow">Intelligence</div>
+      <div class="page-title">Organic Search</div>
+      <div class="page-sub">Keyword movements and search presence across Mattress Firm, Sleep Number, Purple, and Casper</div>
+      <div class="sec-header">
+        <div class="sec-title">Keyword Movers This Week</div>
+        <div class="sec-meta">Live Semrush data · overlap with Mattress Warehouse flagged</div>
       </div>
-      <div class="section-header">
-        <div class="section-title">Keyword Movers This Week</div>
-        <div class="section-meta">Live Semrush data · overlap with Mattress Warehouse flagged</div>
-      </div>
-      <div class="chart-card">
-        <table class="data-table">
+      <div class="card">
+        <table class="data-table" id="keyword-table">
           <thead><tr><th>Keyword</th><th>Competitor</th><th>Position</th><th>Change</th><th>Monthly Volume</th><th>Overlap</th></tr></thead>
           <tbody id="keyword-tbody">
-            <tr><td><span class="kw">mattress firm</span></td><td><span class="comp-label">Mattress Firm</span></td><td><span class="pos-badge good">#1</span></td><td><span class="chg flat">→ 0</span></td><td>550,000</td><td><span style="color:var(--coral);font-family:var(--font-head);font-size:11px;font-weight:600">Brand overlap</span></td></tr>
-            <tr><td><span class="kw">mattress stores</span></td><td><span class="comp-label">Mattress Firm</span></td><td><span class="pos-badge good">#2</span></td><td><span class="chg up">↑ +1</span></td><td>33,100</td><td><span style="color:var(--coral);font-family:var(--font-head);font-size:11px;font-weight:600">Direct overlap</span></td></tr>
-            <tr><td><span class="kw">purple mattress</span></td><td><span class="comp-label">Purple</span></td><td><span class="pos-badge good">#1</span></td><td><span class="chg flat">→ 0</span></td><td>201,000</td><td><span style="color:var(--mustard);font-family:var(--font-head);font-size:11px;font-weight:600">Carried in store</span></td></tr>
-            <tr><td><span class="kw">queen mattress dimensions</span></td><td><span class="comp-label">Sleep Number</span></td><td><span class="pos-badge mid">#6</span></td><td><span class="chg up">↑ +4</span></td><td>40,500</td><td><span style="color:var(--spring);font-family:var(--font-head);font-size:11px;font-weight:600">Gap opportunity</span></td></tr>
-            <tr><td><span class="kw">sleep number</span></td><td><span class="comp-label">Sleep Number</span></td><td><span class="pos-badge good">#1</span></td><td><span class="chg flat">→ 0</span></td><td>135,000</td><td><span style="color:var(--dove);font-family:var(--font-head);font-size:11px;font-weight:600">No overlap</span></td></tr>
+            <tr><td><span class="kw">mattress firm</span></td><td><span class="comp-tag">Mattress Firm</span></td><td><span class="badge good">#1</span></td><td><span class="chg flat">→ 0</span></td><td>550,000</td><td><span style="color:var(--coral);font-family:var(--fh);font-size:11px;font-weight:600">Brand overlap</span></td></tr>
+            <tr><td><span class="kw">mattress stores</span></td><td><span class="comp-tag">Mattress Firm</span></td><td><span class="badge good">#2</span></td><td><span class="chg up">↑ +1</span></td><td>33,100</td><td><span style="color:var(--coral);font-family:var(--fh);font-size:11px;font-weight:600">Direct overlap</span></td></tr>
+            <tr><td><span class="kw">purple mattress</span></td><td><span class="comp-tag">Purple</span></td><td><span class="badge good">#1</span></td><td><span class="chg flat">→ 0</span></td><td>201,000</td><td><span style="color:var(--mustard);font-family:var(--fh);font-size:11px;font-weight:600">Carried in store</span></td></tr>
+            <tr><td><span class="kw">queen mattress dimensions</span></td><td><span class="comp-tag">Sleep Number</span></td><td><span class="badge mid">#6</span></td><td><span class="chg up">↑ +4</span></td><td>40,500</td><td><span style="color:var(--spring);font-family:var(--fh);font-size:11px;font-weight:600">Gap opportunity</span></td></tr>
+            <tr><td><span class="kw">sleep number</span></td><td><span class="comp-tag">Sleep Number</span></td><td><span class="badge good">#1</span></td><td><span class="chg flat">→ 0</span></td><td>135,000</td><td><span style="color:var(--dove);font-family:var(--fh);font-size:11px;font-weight:600">No overlap</span></td></tr>
           </tbody>
         </table>
       </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-eyebrow">Search Presence</div><div class="chart-title">Estimated Organic Traffic Share</div><div class="chart-subtitle">Based on Semrush domain overview · week of Mar 18</div></div>
-          <div class="chart-legend">
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-eyebrow">Search Presence</div><div class="card-title">Estimated Organic Traffic Share</div><div class="card-sub">Based on Semrush domain overview · week of Mar 18</div></div>
+          <div class="legend">
             <div class="legend-item"><div class="legend-dot" style="background:#8CBEC6"></div>Mattress Firm</div>
             <div class="legend-item"><div class="legend-dot" style="background:#E1885E"></div>Sleep Number</div>
             <div class="legend-item"><div class="legend-dot" style="background:#DCBE4C"></div>Purple</div>
             <div class="legend-item"><div class="legend-dot" style="background:#C6EB4C"></div>Casper</div>
           </div>
         </div>
-        <div class="chart-wrap tall"><canvas id="sovChart"></canvas></div>
+        <div class="chart-h tall"><canvas id="sovChart"></canvas></div>
       </div>
     </div>
   </div>
 
   <!-- PAID -->
   <div id="page-paid" class="page">
-    <div class="page-content">
-      <div class="page-header">
-        <div class="page-eyebrow">Intelligence</div>
-        <div class="page-header-title">Paid Search</div>
-        <div class="page-header-sub">Ad spend estimates and paid keyword landscape across competitors</div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-eyebrow">Paid Landscape</div><div class="chart-title">Paid Keyword Volume by Competitor</div><div class="chart-subtitle">Semrush paid keyword data · week of Mar 18</div></div>
-          <div class="chart-legend">
+    <div class="pc">
+      <div class="eyebrow">Intelligence</div>
+      <div class="page-title">Paid Search</div>
+      <div class="page-sub">Ad spend estimates and paid keyword landscape across competitors</div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-eyebrow">Paid Landscape</div><div class="card-title">Paid Keyword Volume by Competitor</div><div class="card-sub">Semrush paid keyword data · week of Mar 18</div></div>
+          <div class="legend">
             <div class="legend-item"><div class="legend-dot" style="background:#8CBEC6"></div>Mattress Firm</div>
             <div class="legend-item"><div class="legend-dot" style="background:#E1885E"></div>Sleep Number</div>
             <div class="legend-item"><div class="legend-dot" style="background:#DCBE4C"></div>Purple</div>
             <div class="legend-item"><div class="legend-dot" style="background:#C6EB4C"></div>Casper</div>
           </div>
         </div>
-        <div class="chart-wrap tall"><canvas id="paidChart"></canvas></div>
+        <div class="chart-h tall"><canvas id="paidChart"></canvas></div>
       </div>
-      <div class="section-header"><div class="section-title">Strategic Paid Observations</div><div class="section-meta">Synthesized from Semrush data</div></div>
-      <div class="signals-feed">
-        <div class="signal-item">
-          <div class="signal-icon-wrap paid"><svg viewBox="0 0 15 15" fill="none"><rect x="1" y="3" width="13" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 7.5h5M7.5 5.5v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
-          <div class="signal-body">
-            <div class="signal-competitor">Mattress Firm · Paid Search</div>
-            <div class="signal-title">Maintains dominant paid presence despite class action lawsuits</div>
-            <div class="signal-interp">Mattress Firm continues heavy paid investment even as legal challenges mount. Their 21.88% organic traffic share reinforced by paid coverage creates dual-channel dominance that's difficult to displace short-term.</div>
+      <div class="sec-header"><div class="sec-title">Strategic Paid Observations</div><div class="sec-meta">Synthesized from Semrush data</div></div>
+      <div class="card" style="padding:0">
+        <div class="signals-feed" style="padding:0 22px">
+          <div class="signal">
+            <div class="sicon paid"><svg viewBox="0 0 15 15" fill="none"><rect x="1" y="3" width="13" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 7.5h5M7.5 5.5v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+            <div><div class="scomp">Mattress Firm · Paid Search</div><div class="stitle">Maintains dominant paid presence despite class action lawsuits</div><div class="sinterp">Their 21.88% organic traffic share reinforced by paid coverage creates dual-channel dominance that's difficult to displace short-term.</div></div>
+            <div class="stime">This week</div>
           </div>
-          <div class="signal-time">This week</div>
-        </div>
-        <div class="signal-item">
-          <div class="signal-icon-wrap alert-icon"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1L14 13H1L7.5 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M7.5 6v3.5M7.5 11v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
-          <div class="signal-body">
-            <div class="signal-competitor">Sleep Number · Paid Search</div>
-            <div class="signal-title">Paid activity likely to decline as bankruptcy concerns intensify</div>
-            <div class="signal-interp">Sleep Number's financial distress makes sustained paid investment uncertain. Brands approaching crisis typically reduce ad spend — watch for impression share drops in coming weeks as a leading indicator of further deterioration.</div>
+          <div class="signal">
+            <div class="sicon alert-icon"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1L14 13H1L7.5 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M7.5 6v3.5M7.5 11v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+            <div><div class="scomp">Sleep Number · Paid Search</div><div class="stitle">Paid activity likely to decline as bankruptcy concerns intensify</div><div class="sinterp">Brands approaching crisis typically reduce ad spend — watch for impression share drops as a leading indicator of further deterioration.</div></div>
+            <div class="stime">Watch</div>
           </div>
-          <div class="signal-time">Watch</div>
-        </div>
-        <div class="signal-item">
-          <div class="signal-icon-wrap news"><svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 6h7M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
-          <div class="signal-body">
-            <div class="signal-competitor">Purple · Paid Search</div>
-            <div class="signal-title">Stable paid presence with new bed frame collection support</div>
-            <div class="signal-interp">Purple's new bed frame collection launch is likely supported by incremental paid spend. Their consistent messaging and product expansion into complete sleep solutions represents a deliberate move to increase average order value.</div>
+          <div class="signal">
+            <div class="sicon news"><svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 6h7M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+            <div><div class="scomp">Purple · Paid Search</div><div class="stitle">Stable paid presence with new bed frame collection support</div><div class="sinterp">Purple's consistent messaging and product expansion into complete sleep solutions represents a deliberate move to increase average order value.</div></div>
+            <div class="stime">This week</div>
           </div>
-          <div class="signal-time">This week</div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- CONTENT & WEB -->
-  <div id="page-content" class="page">
-    <div class="page-content">
-      <div class="page-header">
-        <div class="page-eyebrow">Intelligence</div>
-        <div class="page-header-title">Content & Web Changes</div>
-        <div class="page-header-sub">23 significant page changes detected across competitor websites this week · 55 pages monitored</div>
-      </div>
+  <div id="page-contentweb" class="page">
+    <div class="pc">
+      <div class="eyebrow">Intelligence</div>
+      <div class="page-title">Content & Web Changes</div>
+      <div class="page-sub">23 significant page changes detected across competitor websites this week · 55 pages monitored</div>
       <div class="metric-grid">
-        <div class="metric-card"><div class="metric-card-label">Total Page Snapshots</div><div class="metric-card-val">55</div><div class="metric-card-delta delta-neutral">→ Baseline captured</div></div>
-        <div class="metric-card"><div class="metric-card-label">Significant Changes</div><div class="metric-card-val">23</div><div class="metric-card-delta delta-up">↑ High activity week</div></div>
-        <div class="metric-card"><div class="metric-card-label">Competitors Monitored</div><div class="metric-card-val">4</div><div class="metric-card-delta delta-neutral">→ All tracked</div></div>
-        <div class="metric-card"><div class="metric-card-label">Highest Activity</div><div class="metric-card-val">Sleep №</div><div class="metric-card-delta delta-up">↑ Crisis messaging</div></div>
+        <div class="metric"><div class="metric-label">Total Page Snapshots</div><div class="metric-val">55</div><div class="metric-delta neu">→ Baseline captured</div></div>
+        <div class="metric"><div class="metric-label">Significant Changes</div><div class="metric-val">23</div><div class="metric-delta up">↑ High activity week</div></div>
+        <div class="metric"><div class="metric-label">Competitors Monitored</div><div class="metric-val">4</div><div class="metric-delta neu">→ All tracked</div></div>
+        <div class="metric"><div class="metric-label">Highest Activity</div><div class="metric-val">Sleep №</div><div class="metric-delta up">↑ Crisis messaging</div></div>
       </div>
-      <div class="section-header"><div class="section-title">Content Signals This Week</div><div class="section-meta">Strategic implications · AI-synthesized</div></div>
+      <div class="sec-header"><div class="sec-title">Content Signals This Week</div><div class="sec-meta">Strategic implications · AI-synthesized</div></div>
       <div id="content-signals-container">
+        <div class="csig"><div class="csig-comp">Sleep Number</div><div class="csig-title">Five new mattresses launched — portfolio redesign during going concern warnings</div><div class="csig-impl">Attempting product innovation during a bankruptcy warning signals desperation rather than strength. An opportunity for Mattress Warehouse to position on reliability and longevity.</div></div>
+        <div class="csig"><div class="csig-comp">Mattress Firm</div><div class="csig-title">AI-powered store associate efficiency tools rolled out at scale</div><div class="csig-impl">Operational technology investment amid legal costs. Their in-store experience may become more automated — making Mattress Warehouse's human-first service model a clearer differentiator.</div></div>
+        <div class="csig"><div class="csig-comp">Purple</div><div class="csig-title">New bed frame collections launched — expanding into complete sleep ecosystem</div><div class="csig-impl">Purple's expansion beyond mattresses increases their DTC stickiness. Ensure new frame products are represented in store before they drive customers to Purple's direct channel.</div></div>
+        <div class="csig"><div class="csig-comp">Sleep Number</div><div class="csig-title">Travis Kelce partnership announced amid bankruptcy proceedings</div><div class="csig-impl">Signing a celebrity while issuing going concern warnings creates a credibility contradiction consumer media will amplify. Opportunity to contrast Mattress Warehouse's grounded brand story.</div></div>
+      </div>
     </div>
   </div>
 
   <!-- DEMAND TRENDS -->
   <div id="page-trends" class="page">
-    <div class="page-content">
-      <div class="page-header">
-        <div class="page-eyebrow">Intelligence</div>
-        <div class="page-header-title">Demand Trends</div>
-        <div class="page-header-sub">Google Trends search interest — brand and category level, 90-day rolling window</div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div><div class="chart-eyebrow">Brand Interest</div><div class="chart-title">Search Interest Over Time — All Competitors</div><div class="chart-subtitle">Google Trends relative interest (0–100) · US · 13 weeks</div></div>
-          <div class="chart-legend">
+    <div class="pc">
+      <div class="eyebrow">Intelligence</div>
+      <div class="page-title">Demand Trends</div>
+      <div class="page-sub">Google Trends search interest — brand and category level, 90-day rolling window</div>
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-eyebrow">Brand Interest</div><div class="card-title">Search Interest Over Time — All Competitors</div><div class="card-sub">Google Trends relative interest (0–100) · US · 13 weeks</div></div>
+          <div class="legend">
             <div class="legend-item"><div class="legend-dot" style="background:#8CBEC6"></div>Mattress Firm</div>
             <div class="legend-item"><div class="legend-dot" style="background:#E1885E"></div>Sleep Number</div>
             <div class="legend-item"><div class="legend-dot" style="background:#DCBE4C"></div>Purple</div>
             <div class="legend-item"><div class="legend-dot" style="background:#C6EB4C"></div>Casper</div>
           </div>
         </div>
-        <div style="height:270px;position:relative"><canvas id="trendsChart"></canvas></div>
+        <div class="chart-h tall"><canvas id="trendsChart"></canvas></div>
       </div>
-      <div class="trend-insight">
-        <div class="trend-insight-label">Key Insight — Sleep Number</div>
-        <div class="trend-insight-text">Sleep Number's search interest is expected to spike as bankruptcy news spreads. This creates a window where branded search traffic is high but purchase intent is low — consumers researching alternatives. Mattress Warehouse should ensure visibility in "Sleep Number alternative" searches immediately.</div>
-      </div>
-      <div class="trend-insight">
-        <div class="trend-insight-label">Key Insight — Category Demand</div>
-        <div class="trend-insight-text">Mattress category search demand peaks in Q1 around tax refund season. The current disruption from Sleep Number's financial crisis is happening at an advantageous time — consumer purchase intent is seasonally elevated.</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px">
-        <div class="chart-card" style="margin-bottom:0">
-          <div class="chart-header"><div><div class="chart-eyebrow">Category</div><div class="chart-title">Category Keyword Trends</div></div></div>
-          <div style="height:210px;position:relative"><canvas id="categoryTrendsChart"></canvas></div>
+      <div class="tinsight"><div class="tinsight-label">Key Insight — Sleep Number</div><div class="tinsight-text">Sleep Number's search interest is expected to spike as bankruptcy news spreads. This creates a window where branded search traffic is high but purchase intent is low — consumers researching alternatives. Mattress Warehouse should ensure visibility in "Sleep Number alternative" searches immediately.</div></div>
+      <div class="tinsight"><div class="tinsight-label">Key Insight — Category Demand</div><div class="tinsight-text">Mattress category search demand peaks in Q1 around tax refund season. The current disruption from Sleep Number's financial crisis is happening at an advantageous time — consumer purchase intent is seasonally elevated.</div></div>
+      <div class="two-col">
+        <div class="card" style="margin-bottom:0">
+          <div class="card-header"><div><div class="card-eyebrow">Category</div><div class="card-title">Category Keyword Trends</div></div></div>
+          <div class="chart-h"><canvas id="categoryTrendsChart"></canvas></div>
         </div>
-        <div class="chart-card" style="margin-bottom:0">
-          <div class="chart-header"><div><div class="chart-eyebrow">Geography</div><div class="chart-title">Interest by US Region</div></div></div>
-          <div style="height:210px;position:relative"><canvas id="geoChart"></canvas></div>
+        <div class="card" style="margin-bottom:0">
+          <div class="card-header"><div><div class="card-eyebrow">Geography</div><div class="card-title">Interest by US Region</div></div></div>
+          <div class="chart-h"><canvas id="geoChart"></canvas></div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- ALL SIGNALS -->
   <div id="page-signals" class="page">
-    <div class="page-content">
-      <div class="page-header">
-        <div class="page-eyebrow">Intelligence</div>
-        <div class="page-header-title">All Signals</div>
-        <div class="page-header-sub">Complete intelligence feed · week of Mar 18, 2026 · live data · AI-synthesized by Scout</div>
+    <div class="pc">
+      <div class="eyebrow">Intelligence</div>
+      <div class="page-title">All Signals</div>
+      <div class="page-sub">Complete intelligence feed · week of Mar 18, 2026 · live data · AI-synthesized by Scout</div>
+      <div class="pills">
+        <div class="pill active"><div class="pill-dot" style="background:var(--current)"></div>All</div>
+        <div class="pill"><div class="pill-dot" style="background:var(--bubble)"></div>Mattress Firm</div>
+        <div class="pill"><div class="pill-dot" style="background:var(--coral)"></div>Sleep Number</div>
+        <div class="pill"><div class="pill-dot" style="background:var(--mustard)"></div>Purple</div>
+        <div class="pill"><div class="pill-dot" style="background:var(--spring)"></div>Casper</div>
       </div>
-      <div class="comp-pills">
-        <div class="comp-pill active"><div class="comp-pill-dot" style="background:var(--current)"></div>All</div>
-        <div class="comp-pill"><div class="comp-pill-dot" style="background:var(--bubble)"></div>Mattress Firm</div>
-        <div class="comp-pill"><div class="comp-pill-dot" style="background:var(--coral)"></div>Sleep Number</div>
-        <div class="comp-pill"><div class="comp-pill-dot" style="background:var(--mustard)"></div>Purple</div>
-        <div class="comp-pill"><div class="comp-pill-dot" style="background:var(--spring)"></div>Casper</div>
-      </div>
-      <div class="chart-card">
+      <div class="card">
         <div class="signals-feed" id="all-signals-feed">
-          <div class="signal-item">
-            <div class="signal-icon-wrap alert-icon"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1L14 13H1L7.5 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M7.5 6v3.5M7.5 11v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
-            <div class="signal-body">
-              <div class="signal-competitor">Sleep Number · Financial</div>
-              <div class="signal-title">Going concern bankruptcy warning filed — sales down 16%</div>
-              <div class="signal-interp">Sleep Number's financial distress creates immediate market opportunity. Consumers considering Sleep Number purchases will be in research mode. Activate competitive trade-in offers and targeted digital campaigns now.</div>
-            </div>
-            <div class="signal-time">Mar 18</div>
-          </div>
-          <div class="signal-item">
-            <div class="signal-icon-wrap news"><svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 6h7M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
-            <div class="signal-body">
-              <div class="signal-competitor">Mattress Firm · Legal</div>
-              <div class="signal-title">Class action lawsuits filed — fake limited-time sales practices alleged</div>
-              <div class="signal-interp">Despite legal challenges, Mattress Firm holds 21.88% organic traffic share. The lawsuits create a credibility opening — Mattress Warehouse's transparent pricing is a competitive differentiator worth amplifying now.</div>
-            </div>
-            <div class="signal-time">Mar 18</div>
-          </div>
-          <div class="signal-item">
-            <div class="signal-icon-wrap web"><svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 5.5h13" stroke="currentColor" stroke-width="1.3"/></svg></div>
-            <div class="signal-body">
-              <div class="signal-competitor">Sleep Number · Website</div>
-              <div class="signal-title">Five new mattresses launched during going concern warnings</div>
-              <div class="signal-interp">New product launches during bankruptcy proceedings signals misaligned priorities. Competitive messaging opportunity around stability and trust.</div>
-            </div>
-            <div class="signal-time">Mar 18</div>
-          </div>
-          <div class="signal-item">
-            <div class="signal-icon-wrap social"><svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="4" r="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="2.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 10c.5-2 1.5-3 3-3s2.5 1 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
-            <div class="signal-body">
-              <div class="signal-competitor">Sleep Number · Partnerships</div>
-              <div class="signal-title">Travis Kelce signed as strategic partner during bankruptcy proceedings</div>
-              <div class="signal-interp">Celebrity spend while issuing going concern warnings is a credibility risk. The contradiction between marketing investment and financial distress is the kind of story consumer media amplifies.</div>
-            </div>
-            <div class="signal-time">Mar 18</div>
-          </div>
-          <div class="signal-item">
-            <div class="signal-icon-wrap organic"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/></svg></div>
-            <div class="signal-body">
-              <div class="signal-competitor">Mattress Firm · Technology</div>
-              <div class="signal-title">AI-powered store associate tools rolled out nationally</div>
-              <div class="signal-interp">Operational technology investment reduces headcount costs under legal pressure. Their in-store experience becomes more automated — a differentiation opportunity for Mattress Warehouse's human-first service model.</div>
-            </div>
-            <div class="signal-time">Mar 18</div>
-          </div>
-          <div class="signal-item">
-            <div class="signal-icon-wrap web"><svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 5.5h13" stroke="currentColor" stroke-width="1.3"/></svg></div>
-            <div class="signal-body">
-              <div class="signal-competitor">Purple · Product</div>
-              <div class="signal-title">New bed frame collections launched — complete sleep ecosystem play</div>
-              <div class="signal-interp">Purple's DTC stickiness grows with each product category they add. Ensure new frame products are in store before they drive customers direct.</div>
-            </div>
-            <div class="signal-time">Mar 18</div>
-          </div>
-          <div class="signal-item">
-            <div class="signal-icon-wrap organic"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/></svg></div>
-            <div class="signal-body">
-              <div class="signal-competitor">Mattress Firm · Search</div>
-              <div class="signal-title">"mattress stores" moves to #2 — 33,100 monthly searches</div>
-              <div class="signal-interp">High-volume category keyword with direct overlap. Local SEO for "mattress stores near me" variants is the most defensible angle against Mattress Firm's national scale.</div>
-            </div>
-            <div class="signal-time">Mar 18</div>
-          </div>
+          <div class="signal"><div class="sicon alert-icon"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1L14 13H1L7.5 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M7.5 6v3.5M7.5 11v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div><div><div class="scomp">Sleep Number · Financial</div><div class="stitle">Going concern bankruptcy warning filed — sales down 16%</div><div class="sinterp">Sleep Number's financial distress creates immediate market opportunity. Activate competitive trade-in offers and targeted digital campaigns now.</div></div><div class="stime">Mar 18</div></div>
+          <div class="signal"><div class="sicon news"><svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 6h7M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div><div><div class="scomp">Mattress Firm · Legal</div><div class="stitle">Class action lawsuits filed — fake limited-time sales practices alleged</div><div class="sinterp">The lawsuits create a credibility opening — Mattress Warehouse's transparent pricing is a competitive differentiator worth amplifying now.</div></div><div class="stime">Mar 18</div></div>
+          <div class="signal"><div class="sicon web"><svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 5.5h13" stroke="currentColor" stroke-width="1.3"/></svg></div><div><div class="scomp">Sleep Number · Website</div><div class="stitle">Five new mattresses launched during going concern warnings</div><div class="sinterp">New product launches during bankruptcy proceedings signals misaligned priorities. Competitive messaging opportunity around stability and trust.</div></div><div class="stime">Mar 18</div></div>
+          <div class="signal"><div class="sicon social"><svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="4" r="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="2.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 10c.5-2 1.5-3 3-3s2.5 1 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div><div><div class="scomp">Sleep Number · Partnerships</div><div class="stitle">Travis Kelce signed as strategic partner during bankruptcy proceedings</div><div class="sinterp">Celebrity spend while issuing going concern warnings is a credibility risk. The contradiction between marketing investment and financial distress is the kind of story consumer media amplifies.</div></div><div class="stime">Mar 18</div></div>
+          <div class="signal"><div class="sicon organic"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/></svg></div><div><div class="scomp">Mattress Firm · Technology</div><div class="stitle">AI-powered store associate tools rolled out nationally</div><div class="sinterp">Operational technology investment reduces headcount costs under legal pressure. Their in-store experience becomes more automated — a differentiation opportunity for Mattress Warehouse's human-first service model.</div></div><div class="stime">Mar 18</div></div>
+          <div class="signal"><div class="sicon web"><svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 5.5h13" stroke="currentColor" stroke-width="1.3"/></svg></div><div><div class="scomp">Purple · Product</div><div class="stitle">New bed frame collections launched — complete sleep ecosystem play</div><div class="sinterp">Purple's DTC stickiness grows with each product category they add. Ensure new frame products are in store before they drive customers direct.</div></div><div class="stime">Mar 18</div></div>
+          <div class="signal"><div class="sicon organic"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/></svg></div><div><div class="scomp">Mattress Firm · Search</div><div class="stitle">"mattress stores" moves to #2 — 33,100 monthly searches</div><div class="sinterp">High-volume category keyword with direct overlap. Local SEO for "mattress stores near me" variants is the most defensible angle against Mattress Firm's national scale.</div></div><div class="stime">Mar 18</div></div>
         </div>
       </div>
     </div>
   </div>
-
 
 </main>
 </div>
 
 <script>
-// ── SCOUT LIVE DATA ───────────────────────────────────────────────────────────
 const SCOUT_API = 'https://mxcfinwrgvxrwoyzjhhs.supabase.co/functions/v1/get-briefing';
 const CLIENT_SLUG = 'mattress-warehouse';
-
 let pressureChartInstance = null;
-
 const chartsInitialized = {};
+
 function showPage(id,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   el.classList.add('active');
-  // Init charts lazily on first visit — they need visible canvas to render
   if (!chartsInitialized[id]) {
     chartsInitialized[id] = true;
-    setTimeout(()=>initChartsForPage(id), 50);
-  } else {
-    setTimeout(()=>{
-      Object.values(Chart.instances||{}).forEach(c=>{try{c.resize();}catch(e){}});
-    },50);
+    setTimeout(()=>initCharts(id), 60);
   }
 }
 
-// ── RENDER FUNCTIONS ──────────────────────────────────────────────────────────
-
 function renderOverview(data) {
-  // Pressure score + delta
-  document.getElementById('hero-score').textContent = data.pressureScore;
+  if (data.pressureScore) document.getElementById('hero-score').textContent = data.pressureScore;
   const delta = data.weekOverWeek?.pressure_score_delta;
-  if (delta !== undefined) {
-    const sign = delta >= 0 ? '↑ +' : '↓ ';
-    document.getElementById('hero-delta').textContent = sign + delta + ' from last week';
-  }
-
-  // Executive summary
-  if (data.executiveSummary) {
-    document.getElementById('hero-desc').textContent = data.executiveSummary;
-  }
-
-  // Component scores
+  if (delta !== undefined) { const s = delta >= 0 ? '↑ +' : '↓ '; document.getElementById('hero-delta').textContent = s + delta + ' from last week'; }
+  if (data.executiveSummary) document.getElementById('hero-desc').textContent = data.executiveSummary;
   const pc = data.pressureComponents || {};
   if (pc.organic_search) document.getElementById('score-organic').textContent = pc.organic_search;
   if (pc.paid_search) document.getElementById('score-paid').textContent = pc.paid_search;
   if (pc.content_velocity) document.getElementById('score-content').textContent = pc.content_velocity;
   if (pc.social_buzz) document.getElementById('score-social').textContent = pc.social_buzz;
-
-  // Client name + dates
-  if (data.meta?.clientName) {
-    document.getElementById('sidebar-client-name').textContent = data.meta.clientName;
-    document.getElementById('topbar-title').textContent = data.meta.clientName + ' — Competitive Intelligence';
-  }
-  if (data.meta?.weekOf) {
-    const d = new Date(data.meta.weekOf);
-    const fmt = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-    document.getElementById('topbar-date').textContent = fmt;
-    document.getElementById('sidebar-week').textContent = 'Week of ' + fmt;
-  }
-
-  // Top developments
+  if (data.meta?.clientName) { document.getElementById('sidebar-client-name').textContent = data.meta.clientName; document.getElementById('topbar-title').textContent = data.meta.clientName + ' — Competitive Intelligence'; }
+  if (data.meta?.weekOf) { const d = new Date(data.meta.weekOf); const f = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); document.getElementById('topbar-date').textContent = f; document.getElementById('sidebar-week').textContent = 'Week of '+f; }
   if (data.topDevelopments?.length > 0) {
-    const typeMap = { alert:'🔴 Alert', watch:'🟡 Watch', opportunity:'🟢 Opportunity' };
-    document.getElementById('developments-grid').innerHTML = data.topDevelopments.slice(0,3).map(dev => `
-      <div class="highlight-card ${dev.type}">
-        <div class="highlight-type">${typeMap[dev.type] || dev.type} — ${dev.urgency || ''}</div>
-        <div class="highlight-title">${dev.headline}</div>
-        <div class="highlight-body">${dev.detail}</div>
-        <div class="highlight-action">${dev.recommended_action}</div>
-      </div>`).join('');
+    const tm = {alert:'🔴 Alert',watch:'🟡 Watch',opportunity:'🟢 Opportunity'};
+    document.getElementById('developments-grid').innerHTML = data.topDevelopments.slice(0,3).map(d=>`<div class="hl ${d.type==='opportunity'?'opp':d.type}"><div class="hl-type">${tm[d.type]||d.type}</div><div class="hl-title">${d.headline}</div><div class="hl-body">${d.detail}</div><div class="hl-action">${d.recommended_action}</div></div>`).join('');
   }
-
-  // Pressure history chart
   if (data.pressureHistory?.length > 0 && pressureChartInstance) {
-    pressureChartInstance.data.labels = data.pressureHistory.map(h => h.date);
-    const scores = data.pressureHistory.map(h => h.score);
+    pressureChartInstance.data.labels = data.pressureHistory.map(h=>h.date);
+    const scores = data.pressureHistory.map(h=>h.score);
     pressureChartInstance.data.datasets[0].data = scores;
-    const colors = scores.map((_,i) => i === scores.length-1 ? '#E1885E' : '#8fb0b5');
-    const radii = scores.map((_,i) => i === scores.length-1 ? 6 : 2);
-    pressureChartInstance.data.datasets[0].pointBackgroundColor = colors;
-    pressureChartInstance.data.datasets[0].pointRadius = radii;
+    pressureChartInstance.data.datasets[0].pointBackgroundColor = scores.map((_,i)=>i===scores.length-1?'#E1885E':'#8fb0b5');
+    pressureChartInstance.data.datasets[0].pointRadius = scores.map((_,i)=>i===scores.length-1?6:2);
     pressureChartInstance.update();
   }
 }
 
 function renderOrganic(data) {
   if (!data.keywordMovements?.length) return;
-  document.getElementById('keyword-tbody').innerHTML = data.keywordMovements.map(kw => {
-    const pos = kw.current_position;
-    const badgeClass = pos <= 3 ? 'good' : pos <= 10 ? 'mid' : 'bad';
-    const chgClass = kw.position_change > 0 ? 'up' : kw.position_change < 0 ? 'down' : 'flat';
-    const chgArrow = kw.position_change > 0 ? '↑ +' : kw.position_change < 0 ? '↓ ' : '→ ';
-    const overlapColor = kw.overlap_with_client ? 'var(--coral)' : 'var(--dove)';
-    const overlapText = kw.overlap_with_client ? 'Overlaps' : 'No overlap';
-    return `<tr>
-      <td><span class="kw">${kw.keyword}</span></td>
-      <td><span class="comp-label">${kw.competitor}</span></td>
-      <td><span class="pos-badge ${badgeClass}">#${pos}</span></td>
-      <td><span class="chg ${chgClass}">${chgArrow}${Math.abs(kw.position_change)}</span></td>
-      <td>${(kw.monthly_volume||0).toLocaleString()}</td>
-      <td><span style="color:${overlapColor};font-family:var(--font-head);font-size:11px;font-weight:600">${overlapText}</span></td>
-    </tr>`;
+  document.getElementById('keyword-tbody').innerHTML = data.keywordMovements.map(kw=>{
+    const p=kw.current_position, bc=p<=3?'good':'mid', cc=kw.position_change>0?'up':'flat', ca=kw.position_change>0?'↑ +':'→ ';
+    const oc=kw.overlap_with_client?'var(--coral)':'var(--dove)', ot=kw.overlap_with_client?'Overlaps':'No overlap';
+    return `<tr><td><span class="kw">${kw.keyword}</span></td><td><span class="comp-tag">${kw.competitor}</span></td><td><span class="badge ${bc}">#${p}</span></td><td><span class="chg ${cc}">${ca}${Math.abs(kw.position_change)}</span></td><td>${(kw.monthly_volume||0).toLocaleString()}</td><td><span style="color:${oc};font-family:var(--fh);font-size:11px;font-weight:600">${ot}</span></td></tr>`;
   }).join('');
 }
 
-function renderContent(data) {
-  // Only update content signals if we have at least 2 — otherwise keep static HTML
-  if (!data.contentSignals?.length || data.contentSignals.length < 2) return;
-  const container = document.getElementById('content-signals-container');
-  if (!container) return;
-  container.innerHTML = data.contentSignals.map(s => `
-    <div class="content-signal-card">
-      <div class="content-signal-comp">${s.competitor}</div>
-      <div class="content-signal-title">${s.signal}</div>
-      <div class="content-signal-impl">${s.implication}</div>
-    </div>`).join('');
-}
-
-function renderSignals(data) {
-  // All Signals tab has richer static HTML — only replace if live data has 5+ items
-  // so we don't overwrite detailed signals with sparse API data
-  if (!data.topDevelopments?.length || data.topDevelopments.length < 5) return;
-  const feed = document.getElementById('all-signals-feed');
-  if (!feed) return;
-  const icons = {
-    alert: `<svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1L14 13H1L7.5 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M7.5 6v3.5M7.5 11v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
-    watch: `<svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M7.5 4v4l2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
-    opportunity: `<svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1v13M1 7.5h13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
-  };
-  const iconClass = { alert:'alert-icon', watch:'social', opportunity:'news' };
-  feed.innerHTML = data.topDevelopments.map(dev => `
-    <div class="signal-item">
-      <div class="signal-icon-wrap ${iconClass[dev.type]||'organic'}">${icons[dev.type]||icons.watch}</div>
-      <div class="signal-body">
-        <div class="signal-competitor">${dev.competitor} · ${dev.type}</div>
-        <div class="signal-title">${dev.headline}</div>
-        <div class="signal-interp">${dev.detail}</div>
-      </div>
-      <div class="signal-time">${dev.urgency||'this week'}</div>
-    </div>`).join('');
-}
-
-// ── MAIN LOAD ─────────────────────────────────────────────────────────────────
 async function loadScoutData() {
   try {
     const res = await fetch(`${SCOUT_API}?client=${CLIENT_SLUG}`);
-    if (!res.ok) throw new Error('API returned ' + res.status);
+    if (!res.ok) throw new Error('API '+res.status);
     const data = await res.json();
     renderOverview(data);
     renderOrganic(data);
-    renderContent(data);
-    renderSignals(data);
-    console.log('[Scout] Live data loaded — pressure score:', data.pressureScore);
-  } catch (err) {
-    console.warn('[Scout] Could not load live data, using static fallback:', err.message);
+    console.log('[Scout] Live data loaded, pressure:', data.pressureScore);
+  } catch(e) {
+    console.warn('[Scout] Static fallback:', e.message);
   }
 }
 
-// ── CHART DEFAULTS ────────────────────────────────────────────────────────────
 Chart.defaults.color='#8fb0b5';
 Chart.defaults.borderColor='rgba(246,237,230,0.07)';
 Chart.defaults.font.family="'Open Sans',sans-serif";
@@ -660,79 +523,29 @@ Chart.defaults.font.size=11;
 
 const weeks=['Jan 20','Jan 27','Feb 3','Feb 10','Feb 17','Feb 24','Mar 9','Mar 18'];
 
-// Initialize overview charts on load (it's the default active page)
-function initChartsForPage(pageId) {
-  const mk = (id, cfg) => { const el=document.getElementById(id); if(el) new Chart(el,cfg); };
-
-  if (pageId === 'overview') {
-    pressureChartInstance = new Chart(document.getElementById('pressureChart'),{
-      type:'line',
-      data:{labels:weeks,datasets:[{label:'Pressure',data:[48,51,55,58,60,63,63,78],
-        borderColor:'#E1885E',backgroundColor:'rgba(225,136,94,0.07)',fill:true,tension:0.4,
-        pointBackgroundColor:['#8fb0b5','#8fb0b5','#8fb0b5','#8fb0b5','#8fb0b5','#8fb0b5','#8fb0b5','#E1885E'],
-        pointRadius:[2,2,2,2,2,2,2,6],borderWidth:2}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-        scales:{x:{grid:{color:'rgba(246,237,230,0.05)'}},y:{grid:{color:'rgba(246,237,230,0.05)'},min:0,max:100}}}
-    });
+function initCharts(pageId) {
+  const mk = (id,cfg) => { const el=document.getElementById(id); if(el) new Chart(el,cfg); };
+  if (pageId==='overview') {
+    pressureChartInstance = new Chart(document.getElementById('pressureChart'),{type:'line',data:{labels:weeks,datasets:[{label:'Pressure',data:[48,51,55,58,60,63,63,78],borderColor:'#E1885E',backgroundColor:'rgba(225,136,94,0.07)',fill:true,tension:0.4,pointBackgroundColor:['#8fb0b5','#8fb0b5','#8fb0b5','#8fb0b5','#8fb0b5','#8fb0b5','#8fb0b5','#E1885E'],pointRadius:[2,2,2,2,2,2,2,6],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(246,237,230,0.05)'}},y:{grid:{color:'rgba(246,237,230,0.05)'},min:0,max:100}}}});
     loadScoutData();
   }
-
-  if (pageId === 'organic') {
-    mk('sovChart',{type:'bar',
-      data:{labels:['Mattress Firm','Sleep Number','Purple','Casper'],
-        datasets:[{label:'Organic Traffic Share',data:[21.88,14.2,8.4,5.1],
-          backgroundColor:['rgba(139,190,198,0.8)','rgba(225,136,94,0.75)','rgba(220,190,76,0.7)','rgba(198,235,76,0.65)'],borderRadius:6}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-        scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(246,237,230,0.05)'},ticks:{callback:v=>v+'%'}}}}
-    });
+  if (pageId==='organic') {
+    mk('sovChart',{type:'bar',data:{labels:['Mattress Firm','Sleep Number','Purple','Casper'],datasets:[{data:[21.88,14.2,8.4,5.1],backgroundColor:['rgba(139,190,198,0.8)','rgba(225,136,94,0.75)','rgba(220,190,76,0.7)','rgba(198,235,76,0.65)'],borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(246,237,230,0.05)'},ticks:{callback:v=>v+'%'}}}}});
   }
-
-  if (pageId === 'paid') {
-    mk('paidChart',{type:'bar',
-      data:{labels:['Mattress Firm','Sleep Number','Purple','Casper'],
-        datasets:[{label:'Paid Keywords',data:[25,18,12,9],
-          backgroundColor:['rgba(139,190,198,0.8)','rgba(225,136,94,0.75)','rgba(220,190,76,0.7)','rgba(198,235,76,0.65)'],borderRadius:6}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-        scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(246,237,230,0.05)'},ticks:{callback:v=>v+' kw'}}}}
-    });
+  if (pageId==='paid') {
+    mk('paidChart',{type:'bar',data:{labels:['Mattress Firm','Sleep Number','Purple','Casper'],datasets:[{data:[25,18,12,9],backgroundColor:['rgba(139,190,198,0.8)','rgba(225,136,94,0.75)','rgba(220,190,76,0.7)','rgba(198,235,76,0.65)'],borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(246,237,230,0.05)'},ticks:{callback:v=>v+' kw'}}}}});
   }
-
-  if (pageId === 'trends') {
-    const trendDates=Array.from({length:13},(_,i)=>{
-      const d=new Date('2025-12-22');d.setDate(d.getDate()+i*7);
-      return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    });
-    mk('trendsChart',{type:'line',
-      data:{labels:trendDates,datasets:[
-        {label:'Mattress Firm',data:[72,74,70,75,73,76,74,78,76,80,78,82,85],borderColor:'#8CBEC6',fill:false,tension:0.4,pointRadius:2,borderWidth:2.5},
-        {label:'Sleep Number',data:[55,56,54,58,55,57,53,56,52,55,50,48,42],borderColor:'#E1885E',fill:false,tension:0.4,pointRadius:2,borderWidth:2,borderDash:[5,3]},
-        {label:'Purple',data:[38,40,42,41,43,44,43,45,44,46,45,47,48],borderColor:'#DCBE4C',fill:false,tension:0.4,pointRadius:2,borderWidth:2},
-        {label:'Casper',data:[22,24,21,23,22,25,23,24,22,25,23,24,22],borderColor:'#C6EB4C',fill:false,tension:0.4,pointRadius:2,borderWidth:1.5}
-      ]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-        scales:{x:{grid:{color:'rgba(246,237,230,0.05)'},ticks:{maxTicksLimit:8}},y:{grid:{color:'rgba(246,237,230,0.05)'},min:0,max:100}}}
-    });
-    mk('categoryTrendsChart',{type:'line',
-      data:{labels:trendDates,datasets:[
-        {label:'mattress sale',data:[65,68,62,70,72,74,70,76,78,80,76,82,85],borderColor:'#8CBEC6',tension:0.4,pointRadius:2,borderWidth:2,fill:false},
-        {label:'best mattress',data:[55,57,53,58,60,62,58,64,66,68,64,70,72],borderColor:'#C6EB4C',tension:0.4,pointRadius:2,borderWidth:2,fill:false},
-        {label:'memory foam',data:[48,50,47,52,54,55,52,56,58,60,56,62,64],borderColor:'#E1885E',tension:0.4,pointRadius:2,borderWidth:2,fill:false,borderDash:[5,3]}
-      ]},
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{labels:{boxWidth:10,font:{size:10}}}},
-        scales:{x:{grid:{display:false},ticks:{maxTicksLimit:6}},y:{grid:{color:'rgba(246,237,230,0.05)'},min:0,max:100}}}
-    });
-    mk('geoChart',{type:'bar',
-      data:{labels:['Maryland','Virginia','Pennsylvania','Ohio','N. Carolina','Georgia','Tennessee','Florida','New York','Illinois'],
-        datasets:[{label:'Interest',data:[100,92,85,78,74,68,65,60,55,52],backgroundColor:'rgba(60,110,113,0.75)',borderRadius:4}]},
-      options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
-        scales:{x:{grid:{color:'rgba(246,237,230,0.05)'},min:0,max:100},y:{grid:{display:false},ticks:{font:{size:10}}}}}
-    });
+  if (pageId==='trends') {
+    const td=Array.from({length:13},(_,i)=>{const d=new Date('2025-12-22');d.setDate(d.getDate()+i*7);return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});});
+    mk('trendsChart',{type:'line',data:{labels:td,datasets:[{label:'Mattress Firm',data:[72,74,70,75,73,76,74,78,76,80,78,82,85],borderColor:'#8CBEC6',fill:false,tension:0.4,pointRadius:2,borderWidth:2.5},{label:'Sleep Number',data:[55,56,54,58,55,57,53,56,52,55,50,48,42],borderColor:'#E1885E',fill:false,tension:0.4,pointRadius:2,borderWidth:2,borderDash:[5,3]},{label:'Purple',data:[38,40,42,41,43,44,43,45,44,46,45,47,48],borderColor:'#DCBE4C',fill:false,tension:0.4,pointRadius:2,borderWidth:2},{label:'Casper',data:[22,24,21,23,22,25,23,24,22,25,23,24,22],borderColor:'#C6EB4C',fill:false,tension:0.4,pointRadius:2,borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(246,237,230,0.05)'},ticks:{maxTicksLimit:8}},y:{grid:{color:'rgba(246,237,230,0.05)'},min:0,max:100}}}});
+    mk('categoryTrendsChart',{type:'line',data:{labels:td,datasets:[{label:'mattress sale',data:[65,68,62,70,72,74,70,76,78,80,76,82,85],borderColor:'#8CBEC6',tension:0.4,pointRadius:2,borderWidth:2,fill:false},{label:'best mattress',data:[55,57,53,58,60,62,58,64,66,68,64,70,72],borderColor:'#C6EB4C',tension:0.4,pointRadius:2,borderWidth:2,fill:false},{label:'memory foam',data:[48,50,47,52,54,55,52,56,58,60,56,62,64],borderColor:'#E1885E',tension:0.4,pointRadius:2,borderWidth:2,fill:false,borderDash:[5,3]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:10,font:{size:10}}}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:6}},y:{grid:{color:'rgba(246,237,230,0.05)'},min:0,max:100}}}});
+    mk('geoChart',{type:'bar',data:{labels:['Maryland','Virginia','Pennsylvania','Ohio','N. Carolina','Georgia','Tennessee','Florida','New York','Illinois'],datasets:[{data:[100,92,85,78,74,68,65,60,55,52],backgroundColor:'rgba(60,110,113,0.75)',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(246,237,230,0.05)'},min:0,max:100},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
   }
 }
 
-initChartsForPage('overview');
+// Init overview on load (default active tab)
 chartsInitialized['overview'] = true;
+initCharts('overview');
 </script>
 </body>
 </html>
