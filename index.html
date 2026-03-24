@@ -526,41 +526,50 @@ function renderAllSignals(data) {
   const feed = document.getElementById('all-signals-feed');
   if (!feed) return;
   const items = [];
-  // Top developments
-  const devIcons = {alert:'alert-icon',watch:'social',opportunity:'news'};
-  const devSvg = {
-    alert:'<svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1L14 13H1L7.5 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M7.5 6v3.5M7.5 11v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
-    watch:'<svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M7.5 4v4l2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
-    news:'<svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 6h7M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'
+
+  const svgs = {
+    alert: '<svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1L14 13H1L7.5 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M7.5 6v3.5M7.5 11v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+    news:  '<svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 6h7M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+    web:   '<svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 5.5h13" stroke="currentColor" stroke-width="1.3"/></svg>',
+    watch: '<svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M7.5 4v4l2.5 2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
   };
-  (data.topDevelopments||[]).forEach(d=>{
-    const ic = devIcons[d.type]||'organic';
-    const sv = devSvg[d.type]||devSvg.news;
-    items.push(`<div class="signal"><div class="sicon ${ic}">${sv}</div><div><div class="scomp">${d.competitor} · ${d.type}</div><div class="stitle">${d.headline}</div><div class="sinterp">${d.detail}</div></div><div class="stime">${d.urgency||'this week'}</div></div>`);
+
+  function sigRow(iconClass, svg, comp, title, interp, time) {
+    return `<div class="signal"><div class="sicon ${iconClass}">${svg}</div><div><div class="scomp">${comp}</div><div class="stitle">${title}</div><div class="sinterp">${interp}</div></div><div class="stime">${time}</div></div>`;
+  }
+
+  // Top developments from briefing
+  (data.topDevelopments || []).forEach(d => {
+    const ic = d.type === 'alert' ? 'alert-icon' : d.type === 'opportunity' ? 'news' : 'social';
+    const sv = d.type === 'alert' ? svgs.alert : svgs.news;
+    const label = d.type === 'alert' ? '🔴 Alert' : d.type === 'opportunity' ? '🟢 Opportunity' : '🟡 Watch';
+    items.push(sigRow(ic, sv, `${d.competitor || ''} · ${label}`, d.headline || '', d.detail || '', d.urgency || 'this week'));
   });
-  // News mentions — only show if title contains competitor name (filtered by Edge Function)
-  const newsSvg = devSvg.news;
-  (data.newsMentions||[]).slice(0,5).forEach(n=>{
-    const pub = n.published ? new Date(n.published).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
-    const source = n.source ? ' · '+n.source : '';
-    items.push(`<div class="signal"><div class="sicon news">${newsSvg}</div><div><div class="scomp">${n.competitor||''}${source}</div><div class="stitle">${(n.title||'').slice(0,120)}</div><div class="sinterp">${(n.summary||'').replace(/<[^>]*>/g,'').slice(0,180)}</div></div><div class="stime">${pub}</div></div>`);
+
+  // News mentions — title/summary already clean from Edge Function
+  (data.newsMentions || []).slice(0, 5).forEach(n => {
+    const pub = n.published ? new Date(n.published).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : '';
+    const src = n.source ? ' · ' + n.source : '';
+    const title = (n.title || '').slice(0, 110);
+    const summary = (n.summary || '').slice(0, 160);
+    items.push(sigRow('news', svgs.news, `${n.competitor}${src}`, title, summary, pub));
   });
-  // Web changes
-  const webSvg = '<svg viewBox="0 0 15 15" fill="none"><rect x="1" y="2" width="13" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 5.5h13" stroke="currentColor" stroke-width="1.3"/></svg>';
-  (data.webChanges||[]).slice(0,5).forEach(w=>{
-    const changes = (w.changes||[]);
-    const detail = changes.map(c => {
-      const added = (c.added||[]).slice(0,2).join(', ');
-      const removed = (c.removed||[]).slice(0,2).join(', ');
-      let d = c.field||'';
-      if (added) d += ': added "'+added+'"';
-      if (removed) d += (added?' · ':': ')+' removed "'+removed+'"';
+
+  // Web changes — structured data from Edge Function
+  (data.webChanges || []).slice(0, 5).forEach(w => {
+    const page = (w.url || '').replace('https://', '').replace('http://', '');
+    const detail = (w.changes || []).map(c => {
+      const added = (c.added || []).slice(0, 2).join(', ');
+      const removed = (c.removed || []).slice(0, 2).join(', ');
+      let d = c.field || '';
+      if (added) d += ': added "' + added + '"';
+      if (removed) d += (added ? ' · ' : ': ') + 'removed "' + removed + '"';
       return d;
-    }).join(' · ') || 'Page content updated';
-    const page = w.url ? w.url.replace('https://','').replace('http://','') : 'Page updated';
-    const date = w.collected_at ? new Date(w.collected_at).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
-    items.push(`<div class="signal"><div class="sicon web">${webSvg}</div><div><div class="scomp">${w.competitor} · Web Change · Score ${w.significance_score||0}</div><div class="stitle">${page}</div><div class="sinterp">${detail}</div></div><div class="stime">${date}</div></div>`);
+    }).filter(Boolean).join(' · ') || 'Page content updated';
+    const date = w.collected_at ? new Date(w.collected_at).toLocaleDateString('en-US', {month:'short', day:'numeric'}) : '';
+    items.push(sigRow('web', svgs.web, `${w.competitor} · Web Change · Score ${w.significance_score || 0}`, page, detail, date));
   });
+
   if (items.length > 0) feed.innerHTML = items.join('');
 }
 
