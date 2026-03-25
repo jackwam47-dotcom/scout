@@ -504,21 +504,13 @@ function renderOrganic(data) {
 }
 
 function renderContentWeb(data) {
-  if (!data.contentSignals?.length && !data.webChanges?.length) return;
+  // Only render Claude-synthesized content signals — web changes go to All Signals tab only
+  if (!data.contentSignals?.length) return;
   const c = document.getElementById('content-signals-container');
   if (!c) return;
-  let html = '';
-  // Real content signals from Claude synthesis
-  if (data.contentSignals?.length) {
-    html += data.contentSignals.map(s=>`<div class="csig"><div class="csig-comp">${s.competitor}</div><div class="csig-title">${s.signal}</div><div class="csig-impl">${s.implication}</div></div>`).join('');
-  }
-  // Web changes from detector
-  if (data.webChanges?.length) {
-    html += data.webChanges.map(w=>{
-      const changes = (w.data?.changes||[]).map((c)=>c.field+': '+((c.new||'').slice(0,80))).join(' · ');
-      return `<div class="csig"><div class="csig-comp">${w.competitor} · Web Change · Score ${w.data?.significance_score||0}</div><div class="csig-title">${w.data?.url||''}</div><div class="csig-impl">${changes||'Page content updated'}</div></div>`;
-    }).join('');
-  }
+  const html = data.contentSignals.map(s =>
+    `<div class="csig"><div class="csig-comp">${s.competitor}</div><div class="csig-title">${s.signal}</div><div class="csig-impl">${s.implication}</div></div>`
+  ).join('');
   if (html) c.innerHTML = html;
 }
 
