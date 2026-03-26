@@ -17,11 +17,12 @@ env:
   SEMRUSH_API_KEY: ${{ secrets.SEMRUSH_API_KEY }}
   REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
   REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+  YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
 
 jobs:
   collect-and-synthesize:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -34,9 +35,6 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
-
-      - name: Install Playwright browsers
-        run: playwright install chromium --with-deps
 
       - name: Get active clients
         id: get-clients
@@ -92,31 +90,31 @@ jobs:
             "
           fi
 
-      - name: Run Trends collector
+      - name: Run YouTube collector
         run: |
           INPUT_SLUG="${{ github.event.inputs.client_slug }}"
           if [ -n "$INPUT_SLUG" ]; then
-            python collectors/trends_collector.py "$INPUT_SLUG"
+            python collectors/social_youtube.py "$INPUT_SLUG"
           else
             echo '${{ steps.get-clients.outputs.clients }}' | python -c "
           import sys, json, subprocess
           clients = json.load(sys.stdin)
           for slug in clients:
-              subprocess.run(['python', 'collectors/trends_collector.py', slug], check=False)
+              subprocess.run(['python', 'collectors/social_youtube.py', slug], check=False)
             "
           fi
 
-      - name: Run Web Change Detector
+      - name: Run Instagram collector
         run: |
           INPUT_SLUG="${{ github.event.inputs.client_slug }}"
           if [ -n "$INPUT_SLUG" ]; then
-            python collectors/web_change_detector.py "$INPUT_SLUG"
+            python collectors/social_instagram.py "$INPUT_SLUG"
           else
             echo '${{ steps.get-clients.outputs.clients }}' | python -c "
           import sys, json, subprocess
           clients = json.load(sys.stdin)
           for slug in clients:
-              subprocess.run(['python', 'collectors/web_change_detector.py', slug], check=False)
+              subprocess.run(['python', 'collectors/social_instagram.py', slug], check=False)
             "
           fi
 
