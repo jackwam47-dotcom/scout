@@ -565,6 +565,47 @@ function renderAllSignals(data) {
   if (items.length > 0) feed.innerHTML = items.join('');
 }
 
+function renderSocial(data) {
+  const yt = data.youtubeSocial || [];
+  const ig = data.instagramSocial || [];
+  if (!yt.length && !ig.length) return;
+
+  // Update the social score in overview breakdown
+  const socialScore = document.getElementById('score-social');
+  if (socialScore && data.pressureComponents?.social_buzz) {
+    socialScore.textContent = data.pressureComponents.social_buzz;
+  }
+
+  // Inject social signals into All Signals feed (append after existing items)
+  const feed = document.getElementById('all-signals-feed');
+  if (!feed) return;
+
+  const ytSvg = '<svg viewBox="0 0 15 15" fill="none"><rect x="1" y="3" width="13" height="9" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M6 5.5l4 2-4 2v-4z" fill="currentColor"/></svg>';
+  const igSvg = '<svg viewBox="0 0 15 15" fill="none"><rect x="1.5" y="1.5" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.3"/><circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="11" cy="4" r="0.75" fill="currentColor"/></svg>';
+
+  const items = [];
+
+  yt.forEach(c => {
+    const subs = c.subscriber_count ? c.subscriber_count.toLocaleString() : '—';
+    const uploads = c.uploads_14d || 0;
+    const views = c.views_14d ? c.views_14d.toLocaleString() : '0';
+    const topVideo = c.top_video_title ? `Top video: "${c.top_video_title}" (${(c.top_video_views||0).toLocaleString()} views)` : 'No uploads in past 14 days';
+    items.push(`<div class="signal"><div class="sicon organic">${ytSvg}</div><div><div class="scomp">${c.competitor} · YouTube</div><div class="stitle">${subs} subscribers · ${uploads} uploads in 14 days · ${views} total views</div><div class="sinterp">${topVideo}</div></div><div class="stime">This week</div></div>`);
+  });
+
+  ig.forEach(c => {
+    if (!c.follower_count) return; // skip if no data
+    const followers = c.follower_count.toLocaleString();
+    const posts = c.posts_last_30d || 0;
+    const er = c.engagement_rate ? c.engagement_rate.toFixed(2) + '%' : '—';
+    items.push(`<div class="signal"><div class="sicon social">${igSvg}</div><div><div class="scomp">${c.competitor} · Instagram · @${c.handle}</div><div class="stitle">${followers} followers · ${posts} posts in 30 days</div><div class="sinterp">Engagement rate: ${er} · Avg likes: ${(c.avg_likes||0).toLocaleString()}</div></div><div class="stime">This week</div></div>`);
+  });
+
+  if (items.length) {
+    feed.innerHTML += items.join('');
+  }
+}
+
 async function loadScoutData() {
   try {
     const res = await fetch(`${SCOUT_API}?client=${CLIENT_SLUG}`);
@@ -574,6 +615,7 @@ async function loadScoutData() {
     renderOrganic(data);
     renderContentWeb(data);
     renderAllSignals(data);
+    renderSocial(data);
     console.log('[Scout] Live data loaded — pressure:', data.pressureScore, '| signals:', data.signalCounts);
   } catch(e) {
     console.warn('[Scout] Static fallback:', e.message);
