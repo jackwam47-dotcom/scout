@@ -1,7 +1,7 @@
 """
 Scout — Claude Synthesizer
 Takes raw signals from Supabase and generates weekly briefings
-using the Claude API (claude-sonnet-4-20250514).
+using the Claude API.
 
 Cost estimate: ~$0.10-0.30 per client per week at typical signal volume.
 """
@@ -19,8 +19,6 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 anthropic = Anthropic(api_key=ANTHROPIC_API_KEY)
 
-
-# ── Prompt Templates ──────────────────────────────────────────────────────────
 
 SYSTEM_PROMPT = """You are Scout, a competitive intelligence analyst for health and wellness brands.
 Your job is to analyze raw competitive signals and produce clear, actionable weekly briefings for marketing teams.
@@ -53,7 +51,7 @@ Produce a weekly competitive briefing as JSON with this exact schema:
     {{
       "type": "alert|watch|opportunity",
       "competitor": "<name>",
-      "headline": "<10 words max — what happened>",
+      "headline": "<10 words max>",
       "detail": "<2-3 sentences — what this means strategically>",
       "recommended_action": "<1 specific, actionable thing to do this week>",
       "urgency": "immediate|this_week|this_month"
@@ -63,7 +61,7 @@ Produce a weekly competitive briefing as JSON with this exact schema:
     {{
       "competitor": "<name>",
       "keyword": "<keyword>",
-      "position_change": <integer, positive = moved up, negative = moved down>,
+      "position_change": <integer>,
       "current_position": <integer>,
       "overlap_with_client": <true|false>,
       "monthly_volume": <integer>
@@ -76,34 +74,143 @@ Produce a weekly competitive briefing as JSON with this exact schema:
       "implication": "<what this signals strategically>"
     }}
   ],
+  "social_signals": [
+    {{
+      "competitor": "<name>",
+      "platform": "youtube|instagram",
+      "metric": "<key metric observed>",
+      "implication": "<what this signals strategically>"
+    }}
+  ],
   "reddit_intelligence": [
     {{
       "competitor": "<name>",
       "theme": "<what people are saying>",
       "sentiment": "positive|negative|neutral|mixed",
-      "top_post_title": "<title of highest engagement post>",
+      "top_post_title": "<title>",
       "engagement_level": "high|medium|low",
       "strategic_note": "<what this means for positioning>"
     }}
   ],
   "week_over_week_changes": {{
-    "pressure_score_delta": <integer, change from last week>,
+    "pressure_score_delta": <integer>,
     "notable_changes": ["<change 1>", "<change 2>"]
   }}
 }}
 
 Rules:
-- top_developments should have 3-5 items, sorted by urgency
-- Use "alert" for threats needing immediate attention, "watch" for trends to monitor, "opportunity" for gaps to exploit
-- Be specific — reference actual competitor names, keywords, and numbers from the signals
-- If signals are sparse, note gaps but still produce a useful briefing
-- pressure_score: 0-30 is calm, 31-60 is moderate, 61-85 is elevated, 86-100 is high alert"""
+- top_developments: 3-5 items sorted by urgency
+- alert = immediate threats, watch = trends to monitor, opportunity = gaps to exploit
+- Reference actual competitor names, keywords, and numbers
+- pressure_score: 0-30 calm, 31-60 moderate, 61-85 elevated, 86-100 high alert"""
 
 
-# ── Signal Aggregation ────────────────────────────────────────────────────────
+def slim_signal(source: str, signal: dict) -> dict:
+    """
+    Reduce each signal to only what Claude needs for synthesis.
+    This prevents token overflow when signal volume is high.
+    """
+    comp = signal.get("competitor", "Unknown")
+    data = signal.get("data", {})
+
+    if source == "semrush":
+        # Keep keyword movements, trim to top 20 by volume
+        keywords = data.get("keywords", [])
+        keywords = sorted(keywords, key=lambda k: k.get("volume", 0), reverse=True)[:20]
+        return {
+            "competitor": comp,
+            "keywords": [
+                {
+                    "keyword": k.get("keyword"),
+                    "position": k.get("position"),
+                    "volume": k.get("volume"),
+                    "position_change": k.get("position_change", 0),
+                }
+                for k in keywords
+            ],
+        }
+
+    elif source == "google_news":
+        # Keep top 5 articles by recency, trim to title + source only
+        articles = data.get("articles", [])[:5]
+        return {
+            "competitor": comp,
+            "articles": [
+                {
+                    "title": a.get("title", "")[:120],
+                    "source": a.get("source", ""),
+                    "published": a.get("published", ""),
+                }
+                for a in articles
+            ],
+        }
+
+    elif source == "web_change":
+        score = data.get("significance_score")
+        if not score or int(score) == 0:
+            return None  # Skip baseline snapshots entirely
+        changes = data.get("changes", [])
+        return {
+            "competitor": comp,
+            "url": data.get("url", ""),
+            "significance_score": score,
+            "changes": [
+                {
+                    "field": c.get("field"),
+                    "added": c.get("added", [])[:3],
+                    "removed": c.get("removed", [])[:3],
+                }
+                for c in changes
+            ],
+        }
+
+    elif source == "reddit":
+        posts = data.get("posts", [])[:5]
+        return {
+            "competitor": comp,
+            "subreddit": data.get("subreddit"),
+            "posts": [
+                {
+                    "title": p.get("title", "")[:100],
+                    "score": p.get("score", 0),
+                    "num_comments": p.get("num_comments", 0),
+                }
+                for p in posts
+            ],
+        }
+
+    elif source == "youtube":
+        signals = data.get("signals", {})
+        return {
+            "competitor": comp,
+            "subscriber_count": signals.get("subscriber_count"),
+            "uploads_14d": signals.get("upload_count_14d"),
+            "views_14d": signals.get("total_views_14d"),
+            "top_video": signals.get("top_video_title"),
+            "top_video_views": signals.get("top_video_views"),
+        }
+
+    elif source == "instagram":
+        signals = data.get("signals", {})
+        return {
+            "competitor": comp,
+            "followers": signals.get("follower_count"),
+            "posts_30d": signals.get("posts_last_30d"),
+            "avg_likes": signals.get("avg_likes"),
+            "engagement_rate": signals.get("engagement_rate"),
+        }
+
+    else:
+        # Generic trim — keep data but cap size
+        return {
+            "competitor": comp,
+            "signal_type": signal.get("signal_type"),
+            "summary": str(data)[:300],
+        }
+
 
 def fetch_week_signals(client_id: str, days_back: int = 7) -> dict:
-    """Pull all signals from the past week and organize by type."""
+    """Pull all signals from the past week, slim them, and organize by source."""
     cutoff = (datetime.utcnow() - timedelta(days=days_back)).isoformat()
 
     result = (
@@ -119,33 +226,48 @@ def fetch_week_signals(client_id: str, days_back: int = 7) -> dict:
     organized = {
         "semrush": [],
         "google_news": [],
+        "web_changes": [],
         "reddit": [],
-        "other": [],
+        "youtube": [],
+        "instagram": [],
     }
 
     for signal in signals:
         comp_name = signal.get("competitors", {}).get("name", "Unknown")
+        source = signal.get("source", "other")
+
         entry = {
             "competitor": comp_name,
             "signal_type": signal["signal_type"],
             "data": signal["data"],
             "collected_at": signal["collected_at"],
         }
-        source = signal.get("source", "other")
+
+        slimmed = slim_signal(source, entry)
+        if slimmed is None:
+            continue  # Skip filtered signals (e.g. score-0 web changes)
+
         if source in ("semrush", "semrush_csv"):
-            organized["semrush"].append(entry)
+            organized["semrush"].append(slimmed)
         elif source == "google_news":
-            organized["google_news"].append(entry)
+            organized["google_news"].append(slimmed)
+        elif source == "web_change":
+            organized["web_changes"].append(slimmed)
         elif source == "reddit":
-            organized["reddit"].append(entry)
-        else:
-            organized["other"].append(entry)
+            organized["reddit"].append(slimmed)
+        elif source == "youtube":
+            organized["youtube"].append(slimmed)
+        elif source == "instagram":
+            organized["instagram"].append(slimmed)
+
+    # Cap total signals per category to avoid token overflow
+    for key in organized:
+        organized[key] = organized[key][:15]
 
     return organized
 
 
 def get_last_week_score(client_id: str) -> int | None:
-    """Get last week's pressure score for delta calculation."""
     last_week = (date.today() - timedelta(days=7)).isoformat()
     result = (
         supabase.table("briefings")
@@ -161,13 +283,10 @@ def get_last_week_score(client_id: str) -> int | None:
     return None
 
 
-# ── Main Synthesis Flow ───────────────────────────────────────────────────────
-
 def synthesize_for_client(client_slug: str):
     """Generate weekly briefing for a client."""
     print(f"[synthesizer] Starting synthesis for: {client_slug}")
 
-    # Get client info
     result = supabase.table("clients").select("id, name, config").eq("slug", client_slug).single().execute()
     if not result.data:
         print(f"[synthesizer] ERROR: Client '{client_slug}' not found")
@@ -177,7 +296,6 @@ def synthesize_for_client(client_slug: str):
     client_name = result.data["name"]
     week_of = date.today().isoformat()
 
-    # Check if briefing already exists for this week
     existing = (
         supabase.table("briefings")
         .select("id")
@@ -189,16 +307,20 @@ def synthesize_for_client(client_slug: str):
         print(f"[synthesizer] Briefing already exists for {client_slug} week of {week_of}, skipping")
         return
 
-    # Fetch signals
     signals = fetch_week_signals(client_id)
     total_signals = sum(len(v) for v in signals.values())
     print(f"[synthesizer] Found {total_signals} signals across all sources")
 
-    if total_signals == 0:
-        print(f"[synthesizer] WARNING: No signals found for {client_slug}, generating placeholder briefing")
-
-    # Build prompt and call Claude
+    # Estimate token size before sending
     prompt = build_analysis_prompt(client_name, signals, week_of)
+    estimated_tokens = len(prompt) // 4  # rough estimate
+    print(f"[synthesizer] Estimated prompt tokens: ~{estimated_tokens:,}")
+
+    if estimated_tokens > 150000:
+        print(f"[synthesizer] WARNING: Prompt is large ({estimated_tokens:,} tokens), trimming further")
+        for key in signals:
+            signals[key] = signals[key][:5]
+        prompt = build_analysis_prompt(client_name, signals, week_of)
 
     print(f"[synthesizer] Calling Claude API...")
     message = anthropic.messages.create(
@@ -210,9 +332,7 @@ def synthesize_for_client(client_slug: str):
 
     raw_response = message.content[0].text
 
-    # Parse JSON response
     try:
-        # Strip any markdown code fences if present
         clean = raw_response.strip()
         if clean.startswith("```"):
             clean = clean.split("```")[1]
@@ -224,14 +344,12 @@ def synthesize_for_client(client_slug: str):
         print(f"Raw response: {raw_response[:500]}")
         return
 
-    # Inject last week delta
     last_score = get_last_week_score(client_id)
     if last_score is not None:
         briefing_data["week_over_week_changes"]["pressure_score_delta"] = (
             briefing_data.get("pressure_score", 50) - last_score
         )
 
-    # Save to Supabase
     supabase.table("briefings").insert({
         "client_id": client_id,
         "week_of": week_of,
@@ -242,7 +360,7 @@ def synthesize_for_client(client_slug: str):
         "created_at": datetime.utcnow().isoformat(),
     }).execute()
 
-    print(f"[synthesizer] ✓ Briefing saved for {client_slug} — Pressure score: {briefing_data.get('pressure_score')}")
+    print(f"[synthesizer] Briefing saved for {client_slug} — Pressure score: {briefing_data.get('pressure_score')}")
     return briefing_data
 
 
