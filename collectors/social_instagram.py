@@ -1,143 +1,103 @@
 """
 Scout — Instagram Social Collector
-Tracks competitor Instagram accounts: follower count, post cadence,
-recent post engagement, and content themes.
+Uses Meta Graph API with a connected business Instagram account
+to fetch public competitor profile data.
 
-Uses Instagram Basic Display API / Graph API.
-Requires: INSTAGRAM_ACCESS_TOKEN (long-lived token via Meta developer app)
-
-Note: Instagram's API requires an approved Meta developer app with
-instagram_basic and instagram_manage_insights permissions.
-The token should be a long-lived token (valid 60 days, auto-refreshed).
-
-For competitors (non-owned accounts), we use public profile scraping
-via a lightweight approach that doesn't require competitor OAuth consent.
+Requires: INSTAGRAM_ACCESS_TOKEN (long-lived token from Meta developer app)
+          INSTAGRAM_BUSINESS_ACCOUNT_ID (your connected business account ID)
 """
 
 import os
 import requests
-import json
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from supabase import create_client, Client
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
-
-# Instagram Graph API token (for owned account insights)
-# For competitor public data, we use the public embed approach
-INSTAGRAM_TOKEN = os.environ.get("INSTAGRAM_ACCESS_TOKEN")
+ACCESS_TOKEN = os.environ.get("INSTAGRAM_ACCESS_TOKEN")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-IG_BASE = "https://graph.instagram.com"
-IG_GRAPH = "https://graph.facebook.com/v19.0"
+GRAPH_BASE = "https://graph.facebook.com/v19.0"
 
 
-def get_public_profile(handle: str) -> dict:
+def get_business_account_id() -> str | None:
+    """Get the Instagram business account ID connected to this token."""
+    resp = requests.get(f"{GRAPH_BASE}/me/accounts", params={
+        "access_token": ACCESS_TOKEN,
+        "fields": "instagram_business_account",
+    })
+    resp.raise_for_status()
+    pages = resp.json().get("data", [])
+    for page in pages:
+        ig = page.get("instagram_business_account")
+        if ig:
+            return ig["id"]
+    return None
+
+
+def get_competitor_profile(business_account_id: str, handle: str) -> dict:
     """
-    Fetch public Instagram profile data using the oEmbed endpoint.
-    This is a free, no-auth approach for basic follower-level signals.
-    Returns available public data without requiring competitor OAuth.
+    Use Instagram Graph API business discovery to fetch a competitor's public profile.
+    This only works when using a connected business account token.
     """
-    try:
-        # Instagram oEmbed — publicly available, no auth required
-        oembed_url = f"https://www.instagram.com/{handle}/?__a=1&__d=dis"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (compatible; ScoutBot/1.0)"
-        }
-        resp = requests.get(oembed_url, headers=headers, timeout=10)
+    resp = requests.get(f"{GRAPH_BASE}/{business_account_id}", params={
+        "access_token": ACCESS_TOKEN,
+        "fields": f"business_discovery.fields(username,followers_count,media_count,biography,website,media{{timestamp,like_count,comments_count,media_type,caption}})",
+        "username": handle,
+    })
 
-        if resp.status_code == 200:
-            try:
-                data = resp.json()
-                user = data.get("graphql", {}).get("user", {})
-                if user:
-                    edge_media = user.get("edge_owner_to_timeline_media", {})
-                    recent_posts = edge_media.get("edges", [])[:12]
+    if resp.status_code != 200:
+        print(f"[instagram]     API error for @{handle}: {resp.status_code} {resp.text[:200]}")
+        return {"handle": handle, "error": resp.text[:200], "method": "api_error"}
 
-                    # Calculate engagement from visible posts
-                    total_likes = sum(
-                        p.get("node", {}).get("edge_liked_by", {}).get("count", 0)
-                        for p in recent_posts
-                    )
-                    total_comments = sum(
-                        p.get("node", {}).get("edge_media_to_comment", {}).get("count", 0)
-                        for p in recent_posts
-                    )
-                    post_count = len(recent_posts)
+    data = resp.json().get("business_discovery", {})
+    media = data.get("media", {}).get("data", [])
 
-                    posts = []
-                    for p in recent_posts:
-                        node = p.get("node", {})
-                        posts.append({
-                            "shortcode": node.get("shortcode"),
-                            "timestamp": node.get("taken_at_timestamp"),
-                            "likes": node.get("edge_liked_by", {}).get("count", 0),
-                            "comments": node.get("edge_media_to_comment", {}).get("count", 0),
-                            "is_video": node.get("is_video", False),
-                            "caption": (node.get("edge_media_to_caption", {})
-                                        .get("edges", [{}])[0]
-                                        .get("node", {})
-                                        .get("text", ""))[:200] if node.get("edge_media_to_caption", {}).get("edges") else "",
-                        })
+    # Calculate engagement from recent posts
+    total_likes = sum(p.get("like_count", 0) for p in media)
+    total_comments = sum(p.get("comments_count", 0) for p in media)
+    post_count = len(media)
+    follower_count = data.get("followers_count", 0)
 
-                    return {
-                        "handle": handle,
-                        "follower_count": user.get("edge_followed_by", {}).get("count", 0),
-                        "following_count": user.get("edge_follow", {}).get("count", 0),
-                        "total_posts": user.get("edge_owner_to_timeline_media", {}).get("count", 0),
-                        "is_verified": user.get("is_verified", False),
-                        "bio": user.get("biography", ""),
-                        "recent_posts": posts,
-                        "signals": {
-                            "post_count_visible": post_count,
-                            "avg_likes": round(total_likes / post_count) if post_count else 0,
-                            "avg_comments": round(total_comments / post_count) if post_count else 0,
-                            "total_engagement": total_likes + total_comments,
-                            "engagement_rate": round((total_likes + total_comments) / max(
-                                user.get("edge_followed_by", {}).get("count", 1), 1
-                            ) / post_count * 100, 3) if post_count else 0,
-                        },
-                        "method": "public_graph",
-                    }
-            except (json.JSONDecodeError, KeyError):
-                pass
-
-        # Fallback: oEmbed for just the handle existence check
-        return {
-            "handle": handle,
-            "follower_count": None,
-            "signals": {},
-            "method": "unavailable",
-            "note": f"Public data unavailable for @{handle} — Instagram may require login to view",
-        }
-
-    except requests.RequestException as e:
-        return {
-            "handle": handle,
-            "error": str(e),
-            "method": "error",
-        }
-
-
-def get_post_cadence(posts: list[dict], days: int = 30) -> dict:
-    """Calculate posting cadence from recent posts."""
-    if not posts:
-        return {"posts_per_week": 0, "posts_last_30d": 0}
-
-    cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+    # Posts in last 30 days
+    from datetime import timezone, timedelta
+    cutoff = datetime.now(timezone.utc) - timedelta(days=30)
     recent = [
-        p for p in posts
+        p for p in media
         if p.get("timestamp") and
-        datetime.fromtimestamp(p["timestamp"], tz=timezone.utc) > cutoff
+        datetime.fromisoformat(p["timestamp"].replace("Z", "+00:00")) > cutoff
     ]
 
+    posts = [{
+        "timestamp": p.get("timestamp"),
+        "likes": p.get("like_count", 0),
+        "comments": p.get("comments_count", 0),
+        "media_type": p.get("media_type", ""),
+        "caption": (p.get("caption", "") or "")[:150],
+    } for p in media[:12]]
+
     return {
-        "posts_last_30d": len(recent),
-        "posts_per_week": round(len(recent) / (days / 7), 1),
-        "video_ratio": round(
-            sum(1 for p in recent if p.get("is_video")) / len(recent), 2
-        ) if recent else 0,
+        "handle": handle,
+        "follower_count": follower_count,
+        "media_count": data.get("media_count", 0),
+        "biography": data.get("biography", ""),
+        "website": data.get("website", ""),
+        "recent_posts": posts,
+        "signals": {
+            "follower_count": follower_count,
+            "posts_last_30d": len(recent),
+            "posts_per_week": round(len(recent) / 4.3, 1),
+            "avg_likes": round(total_likes / post_count) if post_count else 0,
+            "avg_comments": round(total_comments / post_count) if post_count else 0,
+            "engagement_rate": round(
+                (total_likes + total_comments) / max(follower_count, 1) / max(post_count, 1) * 100, 3
+            ),
+            "video_ratio": round(
+                sum(1 for p in media if p.get("media_type") == "VIDEO") / max(post_count, 1), 2
+            ),
+        },
+        "method": "graph_api",
     }
 
 
@@ -160,6 +120,21 @@ def get_competitor_id(client_id: str, domain: str) -> str | None:
 
 def collect_for_client(client_slug: str):
     print(f"[instagram] Starting collection for: {client_slug}")
+
+    if not ACCESS_TOKEN:
+        print("[instagram] ERROR: INSTAGRAM_ACCESS_TOKEN not set")
+        return
+
+    # Get connected business account ID
+    try:
+        business_account_id = get_business_account_id()
+        if not business_account_id:
+            print("[instagram] ERROR: No Instagram business account found on this token")
+            return
+        print(f"[instagram] Using business account ID: {business_account_id}")
+    except Exception as e:
+        print(f"[instagram] ERROR getting business account: {e}")
+        return
 
     client_id = get_client_id(client_slug)
     if not client_id:
@@ -186,37 +161,29 @@ def collect_for_client(client_slug: str):
         print(f"[instagram]   Collecting for: {comp_name} (@{handle})")
 
         try:
-            profile = get_public_profile(handle)
-            cadence = get_post_cadence(profile.get("recent_posts", []))
-
-            data = {
-                "handle": handle,
-                "follower_count": profile.get("follower_count"),
-                "total_posts": profile.get("total_posts"),
-                "is_verified": profile.get("is_verified"),
-                "bio": profile.get("bio"),
-                "recent_posts": profile.get("recent_posts", []),
-                "signals": {
-                    **profile.get("signals", {}),
-                    **cadence,
-                    "follower_count": profile.get("follower_count"),
-                },
-                "method": profile.get("method"),
-                "collected_date": datetime.utcnow().date().isoformat(),
-            }
+            profile = get_competitor_profile(business_account_id, handle)
 
             supabase.table("signals").insert({
                 "client_id": client_id,
                 "competitor_id": comp_id,
                 "source": "instagram",
                 "signal_type": "profile_snapshot",
-                "data": data,
+                "data": {
+                    "handle": profile.get("handle"),
+                    "follower_count": profile.get("follower_count"),
+                    "media_count": profile.get("media_count"),
+                    "biography": profile.get("biography"),
+                    "recent_posts": profile.get("recent_posts", []),
+                    "signals": profile.get("signals", {}),
+                    "method": profile.get("method"),
+                    "collected_date": datetime.utcnow().date().isoformat(),
+                },
                 "collected_at": datetime.utcnow().isoformat(),
             }).execute()
 
-            followers = profile.get("follower_count")
-            follower_str = f"{followers:,}" if followers else "unknown"
-            print(f"[instagram]   Stored: @{handle} — {follower_str} followers, {cadence.get('posts_last_30d', 0)} posts/30d")
+            followers = profile.get("follower_count") or 0
+            posts_30d = profile.get("signals", {}).get("posts_last_30d", 0)
+            print(f"[instagram]   Stored: @{handle} — {followers:,} followers, {posts_30d} posts/30d")
 
         except Exception as e:
             print(f"[instagram]   ERROR for {comp_name}: {e}")
