@@ -154,3 +154,21 @@ jobs:
           git add index.html
           git diff --staged --quiet || git commit -m "Scout: Weekly intelligence update $(date +'%Y-%m-%d')"
           git push
+
+      - name: Send email digest
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SCOUT_DIGEST_RECIPIENTS: ${{ secrets.SCOUT_DIGEST_RECIPIENTS }}
+          SCOUT_FROM_EMAIL: ${{ secrets.SCOUT_FROM_EMAIL }}
+        run: |
+          INPUT_SLUG="${{ github.event.inputs.client_slug }}"
+          if [ -n "$INPUT_SLUG" ]; then
+            python builders/email_digest.py "$INPUT_SLUG"
+          else
+            echo '${{ steps.get-clients.outputs.clients }}' | python -c "
+          import sys, json, subprocess
+          clients = json.load(sys.stdin)
+          for slug in clients:
+              subprocess.run(['python', 'builders/email_digest.py', slug], check=False)
+            "
+          fi
